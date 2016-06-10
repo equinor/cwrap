@@ -30,6 +30,7 @@ class MetaCWrap(type):
         super(MetaCWrap, cls).__init__(name, bases, attrs)
 
         is_return_type = False
+        is_enum = False
         storage_type = None
 
         if "TYPE_NAME" in attrs:
@@ -37,7 +38,10 @@ class MetaCWrap(type):
         else:
             type_name = snakeCase(name)
 
-        if hasattr(cls, "DATA_TYPE") or hasattr(cls, "enums"):
+        if hasattr(cls, "enums"):
+            is_enum = True
+
+        if hasattr(cls, "DATA_TYPE") or is_enum:
             is_return_type = True
 
         if hasattr(cls, "storageType"):
@@ -60,3 +64,6 @@ class MetaCWrap(type):
                 if attr.shouldBeBound():
                     method = MethodType(attr, None, cls)
                     setattr(cls, key, method)
+
+            elif is_enum and isinstance(attr, int):
+                cls.addEnum(key, attr)
