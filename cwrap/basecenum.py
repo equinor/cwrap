@@ -15,7 +15,7 @@
 #  for more details.
 
 import ctypes
-from ert.cwrap import MetaCWrap, CWrapper
+from cwrap import MetaCWrap
 
 
 class BaseCEnum(object):

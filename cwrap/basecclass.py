@@ -15,8 +15,7 @@
 #  for more details.
 
 import ctypes
-from ert.cwrap import CNamespace
-from ert.cwrap.metacwrap import MetaCWrap
+from cwrap.metacwrap import MetaCWrap
 
 
 class BaseCClass(object):
