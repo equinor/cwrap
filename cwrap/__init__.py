@@ -23,6 +23,15 @@ the process of interacting with a C library:
      library.
 """
 
+__author__ = "Jean-Paul Balabanian, Joakim Hove, and PG Drange"
+__copyright__ = "Copyright 2016, Statoil ASA"
+__credits__ = __author__
+__license__ = "GPL"
+__version__ = "0"
+__maintainer__ = __author__
+__email__ = __author__
+__status__ = "Prototype"
+
 from .prototype import REGISTERED_TYPES, Prototype, PrototypeError
 from .metacwrap import MetaCWrap
 
