@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
 
-// g++ -shared -fPIC -Wl,-soname,ex_map.so.1 -o ex_map.so ex_map.c
+// g++ -std=c++11 -shared -fPIC -Wl,-soname,ex_map.so.1 -o ex_map.so ex_map.c
 
 extern "C" {
 

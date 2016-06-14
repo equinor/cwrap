@@ -4,7 +4,7 @@ from cwrap.clib import lib_name
 
 
 class ExVecstrPrototype(Prototype):
-    lib_file = lib_name( "ex_vecstr" , path = "/private/pgdr/statoil/libcwrap/examples/vecstr" , so_version = "")
+    lib_file = lib_name( "ex_vecstr" )
     lib = ctypes.CDLL( lib_file , ctypes.RTLD_GLOBAL )
 
     def __init__(self , prototype , bind = True):
@@ -50,10 +50,15 @@ class ExVecstr(BaseCClass):
         else:
             self._insert(elt, idx)
 
+    def __iter__(self):
+        idx = 0
+        while idx < len(self):
+            yield self[idx]
+            idx += 1
+
     def __str__(self):
-        ks = self.keys()
-        kv = ["'%s': %s" % (k, self[k]) for k in ks]
-        return '{%s}' % (', '.join(kv))
+        content = ["'%s'" % elt for elt in self]
+        return '[%s]' % (', '.join(content))
 
     def free(self):
         self._free()
@@ -77,3 +82,12 @@ for elt in strs:
 
 for i in range(len(strs)):
     assert vec[i] == strs[i]
+
+print "All tests pass. len(vec) =", len(vec)
+print "vec = ", vec
+
+print "Adding new elt", "Dr. Flikka"
+vec.append("Dr. Flikka")
+
+print "All tests pass. len(vec) =", len(vec)
+print "vec = ", vec

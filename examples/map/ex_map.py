@@ -4,7 +4,7 @@ from cwrap.clib import lib_name
 
 
 class ExMapPrototype(Prototype):
-    lib_file = lib_name( "ex_map" , path = "/private/pgdr/statoil/libcwrap/examples/vector" , so_version = "")
+    lib_file = lib_name( "ex_map" )
     lib = ctypes.CDLL( lib_file , ctypes.RTLD_GLOBAL )
 
     def __init__(self , prototype , bind = True):

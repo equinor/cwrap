@@ -3,7 +3,7 @@
 #include <string>
 #include <iterator>
 
-// g++ -shared -fPIC -Wl,-soname,ex_vecstr.so.1 -o ex_vecstr.so ex_vecstr.c
+// g++ -std=c++11 -shared -fPIC -Wl,-soname,ex_vecstr.so.1 -o ex_vecstr.so ex_vecstr.c
 
 extern "C" {
 
