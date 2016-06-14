@@ -4,7 +4,11 @@ from cwrap.clib import lib_name
 
 
 class LibCPrototype(Prototype):
-    lib_file = lib_name( "libc" , path = "/lib64/" , so_version = ".6")
+    _LIB_NAME = "libc"
+
+    lib_file = lib_name( _LIB_NAME )
+    if not lib_file:
+        raise ImportError("Cannot find library " + _LIB_NAME )
     lib = ctypes.CDLL( lib_file , ctypes.RTLD_GLOBAL )
 
     def __init__(self , prototype , bind = True):
@@ -41,3 +45,4 @@ assert lib.abs(0) == 0
 assert lib.abs(42) == 42
 assert lib.atoi("12") == 12
 assert lib.atoi("-100") == -100
+print "yes, |-18| =", lib.abs(-18)

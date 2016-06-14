@@ -4,7 +4,11 @@ from cwrap.clib import lib_name
 
 
 class ExVecstrPrototype(Prototype):
-    lib_file = lib_name( "ex_vecstr" )
+    _LIB_NAME = "ex_vecstr"
+
+    lib_file = lib_name( _LIB_NAME )
+    if not lib_file:
+        raise ImportError("Cannot find library " + _LIB_NAME )
     lib = ctypes.CDLL( lib_file , ctypes.RTLD_GLOBAL )
 
     def __init__(self , prototype , bind = True):
