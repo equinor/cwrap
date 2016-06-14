@@ -34,6 +34,7 @@ lead to loading a different version of libert_util.so
 import platform
 import ctypes
 import os
+from ctypes.util import find_library
 
 so_extension = {"linux"  : "so",
                 "linux2" : "so",
@@ -82,11 +83,43 @@ def lib_name(lib , path = None , so_version = ""):
             so_name = "%s.%s%s" % (lib, so_extension[ platform_key ], so_version)
 
         if path:
-            return os.path.join( path , so_name )
-        else:
-            return so_name
+            abs_lib = os.path.join( path , so_name )
+            if os.path.isfile(abs_lib):
+                return abs_lib
+    find_lib = _find_library(so_name)
+    if find_lib:
+        return find_lib
+    return so_name
 
 
+def _find_library(lib):
+    ctypes_find = find_library(lib) # does this ever work?
+    if ctypes_find:
+        return ctypes_find
+    paths = ["/usr/local/lib", "/usr/local/lib64",
+             "/usr/lib", "/usr/lib64", "/lib64",
+             "/lib", ".", "..", "~/lib",
+             os.path.dirname(os.path.abspath(__file__)),
+             os.getcwd()]
+    for p in paths:
+        abs_path = os.path.join( p, lib )
+        if os.path.isfile(abs_path):
+            return abs_path
+        for i in range(10):
+            if os.path.isfile(abs_path + str(i)):
+                return abs_path + str(i)
+    # paniccy attempt
+    from sys import argv
+    f1 = os.path.join(os.path.abspath(__file__), argv[0])
+    f2 = os.path.join(os.getcwd(), argv[0])
+    p1 = os.path.join(os.path.dirname(f1), lib)
+    if os.path.isfile(p1):
+        return p1
+    p2 = os.path.join(os.path.dirname(f2), lib)
+    if os.path.isfile(p2):
+        return p2
+    print "failed to find", lib, "in", paths
+    return None
 
 
 def __load( lib_list, ert_prefix):
