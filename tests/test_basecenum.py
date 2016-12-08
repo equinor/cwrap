@@ -1,66 +1,72 @@
-from unittest import TestCase
+import unittest
 
 from cwrap import BaseCEnum
 
+class enum(BaseCEnum):
+    pass
+class enum2(BaseCEnum):
+    pass
+class PowerOf2(BaseCEnum):
+    pass
 
-class Enum(BaseCEnum):
-    ONE = 1
-    TWO = 2
-    FOUR = 4
-    THREE = 3
+class BaseCEnumTest(unittest.TestCase):
 
-
-class AnotherEnum(BaseCEnum):
-    ONE = 1
-    TWO = 4
-
-
-class BaseCEnumTest(TestCase):
     def test_base_c_enum(self):
-        self.assertIsInstance(Enum.ONE, Enum)
-        self.assertIsInstance(AnotherEnum.ONE, AnotherEnum)
+        enum.addEnum("ONE", 1)
+        enum.addEnum("TWO", 2)
+        enum.addEnum("THREE", 3)
+        enum.addEnum("FOUR", 4)
 
-        self.assertEqual(Enum.ONE, 1)
-        self.assertEqual(Enum.TWO, 2)
-        self.assertEqual(Enum.FOUR, 4)
+        enum2.addEnum("ONE", 1)
+        enum2.addEnum("TWO", 4)
 
-        self.assertListEqual(Enum.enums(), [Enum.ONE, Enum.TWO, Enum.THREE, Enum.FOUR])
+        self.assertEqual(enum.ONE, 1)
+        self.assertEqual(enum.TWO, 2)
+        self.assertEqual(enum.FOUR, 4)
 
-        self.assertEqual(Enum(4), Enum.FOUR)
+        self.assertEqual(enum.ONE, enum.ONE)
+        self.assertEqual(enum.TWO, enum.TWO)
+        self.assertEqual(enum.FOUR, enum.FOUR)
 
-        self.assertNotEqual(AnotherEnum(4), Enum.FOUR)
-        self.assertEqual(AnotherEnum(4), AnotherEnum.TWO)
+        self.assertListEqual(enum.enums(), [enum.ONE, enum.TWO, enum.THREE, enum.FOUR])
 
-        self.assertEqual(str(Enum.ONE), "ONE")
+        self.assertEqual(enum(4), enum.FOUR)
 
-        self.assertEqual(Enum.ONE + Enum.TWO, Enum.THREE)
-        self.assertEqual(Enum.ONE + Enum.FOUR, 5)
+        self.assertNotEqual(enum2(4), enum.FOUR)
+        self.assertEqual(enum2(4), enum2.TWO)
+
+        self.assertEqual(str(enum.ONE), "ONE")
+
+
+        self.assertEqual(enum.ONE + enum.TWO, enum.THREE)
+        self.assertEqual(enum.ONE + enum.FOUR, 5)
 
         with self.assertRaises(ValueError):
-            e = Enum(5)
+            e = enum(5)
 
-        self.assertEqual(Enum.THREE & Enum.ONE, Enum.ONE)
-        self.assertEqual(Enum.ONE | Enum.TWO, Enum.THREE)
-        self.assertEqual(Enum.THREE ^ Enum.TWO, Enum.ONE)
 
-        with self.assertRaises(AssertionError):
-            e = Enum.ONE + AnotherEnum.ONE
+        self.assertEqual(enum.THREE & enum.ONE, enum.ONE)
+        self.assertEqual(enum.ONE | enum.TWO, enum.THREE)
+        self.assertEqual(enum.THREE ^ enum.TWO, enum.ONE)
 
-        with self.assertRaises(AssertionError):
-            e = Enum.ONE & AnotherEnum.ONE
 
         with self.assertRaises(AssertionError):
-            e = Enum.ONE | AnotherEnum.ONE
+            e = enum.ONE + enum2.ONE
 
         with self.assertRaises(AssertionError):
-            e = Enum.ONE ^ AnotherEnum.ONE
+            e = enum.ONE & enum2.ONE
+
+        with self.assertRaises(AssertionError):
+            e = enum.ONE | enum2.ONE
+
+        with self.assertRaises(AssertionError):
+            e = enum.ONE ^ enum2.ONE
 
 
     def test_in_operator(self):
-        class PowerOf2(BaseCEnum):
-            ONE = 1
-            TWO = 2
-            FOUR = 4
+        PowerOf2.addEnum("ONE", 1)
+        PowerOf2.addEnum("TWO", 2)
+        PowerOf2.addEnum("FOUR", 4)
 
         three = PowerOf2.ONE | PowerOf2.TWO
 
