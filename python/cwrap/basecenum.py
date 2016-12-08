@@ -14,21 +14,23 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from cwrap import MetaCWrap
+from builtins import int
 
+import ctypes
+from .metacwrap import MetaCWrap
 
 
 class BaseCEnum(object):
     __metaclass__ = MetaCWrap
-    _enum_namespace = {}
+    enum_namespace = {}
 
     def __init__(self, *args, **kwargs):
-        if not self in self._enum_namespace[self.__class__]:
+        if not self in self.enum_namespace[self.__class__]:
             raise NotImplementedError("Can not be instantiated directly!")
 
     def __new__(cls, *args, **kwargs):
         if len(args) == 1:
-            enum = cls._resolveEnum(args[0])
+            enum = cls.__resolveEnum(args[0])
 
             if enum is None:
                 raise ValueError("Unknown enum value: %i" % args[0])
@@ -57,15 +59,14 @@ class BaseCEnum(object):
 
         setattr(cls, name, enum)
 
-        if not cls._enum_namespace.has_key(cls):
-            cls._enum_namespace[cls] = []
+        if cls not in cls.enum_namespace:
+            cls.enum_namespace[cls] = []
 
-        cls._enum_namespace[cls].append(enum)
-        cls._enum_namespace[cls] = sorted(cls._enum_namespace[cls], key=BaseCEnum.__int__)
+        cls.enum_namespace[cls].append(enum)
 
     @classmethod
     def enums(cls):
-        return list(cls._enum_namespace[cls])
+        return list(cls.enum_namespace[cls])
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -74,31 +75,34 @@ class BaseCEnum(object):
         if isinstance(other, int):
             return self.value == other
 
-        return False
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(self.value)
 
     def __str__(self):
         return self.name
 
     def __add__(self, other):
-        self._assertOtherIsSameType(other)
+        self.__assertOtherIsSameType(other)
         value = self.value + other.value
-        return self._resolveOrCreateEnum(value)
+        return self.__resolveOrCreateEnum(value)
 
     def __or__(self, other):
-        self._assertOtherIsSameType(other)
+        self.__assertOtherIsSameType(other)
         value = self.value | other.value
-        return self._resolveOrCreateEnum(value)
+        return self.__resolveOrCreateEnum(value)
 
 
     def __xor__(self, other):
-        self._assertOtherIsSameType(other)
+        self.__assertOtherIsSameType(other)
         value = self.value ^ other.value
-        return self._resolveOrCreateEnum(value)
+        return self.__resolveOrCreateEnum(value)
 
     def __and__(self, other):
-        self._assertOtherIsSameType(other)
+        self.__assertOtherIsSameType(other)
         value = self.value & other.value
-        return self._resolveOrCreateEnum(value)
+        return self.__resolveOrCreateEnum(value)
 
     def __int__(self):
         return self.value
@@ -106,33 +110,52 @@ class BaseCEnum(object):
     def __contains__(self, item):
         return self & item == item
 
-    def __repr__(self):
-        return str(self)
-
     @classmethod
-    def _createEnum(cls, value):
+    def __createEnum(cls, value):
         enum = cls.__new__(cls)
         enum.name = "Unnamed '%s' enum with value: %i" % (str(cls.__name__), value)
         enum.value = value
         return enum
 
     @classmethod
-    def _resolveOrCreateEnum(cls, value):
-        enum = cls._resolveEnum(value)
+    def __resolveOrCreateEnum(cls, value):
+        enum = cls.__resolveEnum(value)
 
         if enum is not None:
             return enum
 
-        return cls._createEnum(value)
+        return cls.__createEnum(value)
 
     @classmethod
-    def _resolveEnum(cls, value):
-        for enum in cls._enum_namespace[cls]:
+    def __resolveEnum(cls, value):
+        for enum in cls.enum_namespace[cls]:
             if enum.value == value:
                 return enum
         return None
 
-    def _assertOtherIsSameType(self, other):
+    def __assertOtherIsSameType(self, other):
         assert isinstance(other, self.__class__), "Can only operate on enums of same type: %s =! %s" % (
             self.__class__.__name__, other.__class__.__name__)
+
+
+    @classmethod
+    def populateEnum(cls, library, enum_provider_function):
+        try:
+            func = getattr(library, enum_provider_function)
+        except AttributeError:
+            raise ValueError("Could not find enum description function: %s - can not load enum: %s." % (enum_provider_function, cls.__name__))
+
+        func.restype = ctypes.c_char_p
+        func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
+
+        index = 0
+        while True:
+            value = ctypes.c_int()
+            name = func(index, ctypes.byref(value))
+
+            if name:
+                cls.addEnum(name, value.value)
+                index += 1
+            else:
+                break
 

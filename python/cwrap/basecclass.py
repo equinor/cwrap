@@ -1,22 +1,21 @@
-#  Copyright (C) 2016 Statoil ASA, Norway.
+#  Copyright (C) 2016  Statoil ASA, Norway.
 #
-#  This file is part of cwrap.
+#  This file is part of ERT - Ensemble based Reservoir Tool.
 #
-#  cwrap is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
+#  ERT is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#  cwrap is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.
+#  ERT is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
 import ctypes
-from cwrap.metacwrap import MetaCWrap
-
+from .metacwrap import MetaCWrap
 
 class BaseCClass(object):
     __metaclass__ = MetaCWrap
@@ -42,11 +41,15 @@ class BaseCClass(object):
 
         return obj
 
+    def _address(self):
+        return self.__c_pointer
+    def _ad_str(self):
+        return 'at 0x%x' % self._address()
 
     @classmethod
     def cNamespace(cls):
         """ @rtype: CNamespace """
-        if not BaseCClass.namespaces.has_key(cls):
+        if cls not in BaseCClass.namespaces:
             BaseCClass.namespaces[cls] = CNamespace(cls.__name__)
         return BaseCClass.namespaces[cls]
 
@@ -109,8 +112,12 @@ class BaseCClass(object):
         if isinstance(other, BaseCClass):
             return self.__c_pointer == other.__c_pointer
         else:
-            return super(BaseCClass , self).__eq__(other)
+            return super(BaseCClass , self) == other
 
+    def __hash__(self):
+        # Similar to last resort comparison; this returns the hash of the
+        # underlying C pointer.
+        return hash(self.__c_pointer)
 
     def free(self):
         raise NotImplementedError("A BaseCClass requires a free method implementation!")

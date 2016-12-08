@@ -1,30 +1,20 @@
 import ctypes
-from cwrap import BaseCClass, Prototype
-from cwrap.clib import lib_name
+from cwrap import BaseCClass, Prototype, load
 
 
 class LibCPrototype(Prototype):
-    _LIB_NAME = "libc"
+    lib = load( "libert_util" )
 
-    lib_file = lib_name( _LIB_NAME )
-    if not lib_file:
-        raise ImportError("Cannot find library " + _LIB_NAME )
-    lib = ctypes.CDLL( lib_file , ctypes.RTLD_GLOBAL )
-
-    def __init__(self , prototype , bind = True):
+    def __init__(self , prototype , bind = False):
         super(LibCPrototype , self).__init__( LibCPrototype.lib , prototype , bind = bind)
 
 
 class LibC(BaseCClass):
-    """
-
-    """
-    TYPE_NAME = "libc"
-
-    _malloc  = LibCPrototype("void* malloc(void*)", bind=False)
-    _abs    = LibCPrototype("int   abs(int)", bind=False)
-    _atoi   = LibCPrototype("int   atoi(char*)", bind=False)
-    _free   = LibCPrototype("void  free(void*)", bind=False)
+    TYPE_NAME = "void_libc_none"
+    _malloc = LibCPrototype("void* malloc(void*)")
+    _abs    = LibCPrototype("int   abs(int)")
+    _atoi   = LibCPrototype("int   atoi(char*)")
+    _free   = LibCPrototype("void  free(void*)")
 
     def __init__(self):
         c_ptr = 1#c_ptr = self._malloc(4)

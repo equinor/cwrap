@@ -17,7 +17,7 @@
 import re
 from types import MethodType
 
-from cwrap.prototype import registerType, Prototype
+from .prototype import Prototype
 
 
 def snakeCase(name):
@@ -30,7 +30,6 @@ class MetaCWrap(type):
         super(MetaCWrap, cls).__init__(name, bases, attrs)
 
         is_return_type = False
-        is_enum = False
         storage_type = None
 
         if "TYPE_NAME" in attrs:
@@ -38,22 +37,19 @@ class MetaCWrap(type):
         else:
             type_name = snakeCase(name)
 
-        if hasattr(cls, "enums"):
-            is_enum = True
-
-        if hasattr(cls, "DATA_TYPE") or is_enum:
+        if hasattr(cls, "DATA_TYPE") or hasattr(cls, "enums"):
             is_return_type = True
 
         if hasattr(cls, "storageType"):
             storage_type = cls.storageType()
 
-        registerType(type_name, cls, is_return_type=is_return_type, storage_type=storage_type)
+        Prototype.registerType(type_name, cls, is_return_type=is_return_type, storage_type=storage_type)
 
         if hasattr(cls, "createCReference"):
-            registerType("%s_ref" % type_name, cls.createCReference, is_return_type=True, storage_type=storage_type)
+            Prototype.registerType("%s_ref" % type_name, cls.createCReference, is_return_type=True, storage_type=storage_type)
 
         if hasattr(cls, "createPythonObject"):
-            registerType("%s_obj" % type_name, cls.createPythonObject, is_return_type=True, storage_type=storage_type)
+            Prototype.registerType("%s_obj" % type_name, cls.createPythonObject, is_return_type=True, storage_type=storage_type)
 
 
         for key, attr in attrs.items():
@@ -64,6 +60,3 @@ class MetaCWrap(type):
                 if attr.shouldBeBound():
                     method = MethodType(attr, None, cls)
                     setattr(cls, key, method)
-
-            elif is_enum and isinstance(attr, int):
-                cls.addEnum(key, attr)

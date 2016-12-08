@@ -17,7 +17,7 @@
 from ctypes import pointer, c_long, c_int, c_bool, c_float, c_double, c_byte, \
     c_short, c_char, c_ubyte, c_ushort, c_uint, c_ulong
 
-from cwrap.metacwrap import MetaCWrap
+from .metacwrap import MetaCWrap
 
 class BaseCValue(object):
     __metaclass__ = MetaCWrap

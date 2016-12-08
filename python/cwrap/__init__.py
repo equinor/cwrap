@@ -21,23 +21,31 @@ the process of interacting with a C library:
      shared library using the ctypes.CDLL(); the function has
      facilities for trying several different names when loading the
      library.
+
+  cfile: This module implemenets the class CFILE which can be used to
+     extract the underlying FILE pointer from a Python filehandle, to
+     facilitate use of Python filehandles for functions expecting a
+     FILE pointer.
 """
 
-__author__ = "Jean-Paul Balabanian, Joakim Hove, and PG Drange"
-__copyright__ = "Copyright 2016, Statoil ASA"
+__author__ = 'Jean-Paul Balabanian, Joakim Hove, and PG Drange'
+__copyright__ = 'Copyright 2016, Statoil ASA'
 __credits__ = __author__
-__license__ = "GPL"
-__version__ = "0"
+__license__ = 'GPL'
+__version__ = '0.0.1'
 __maintainer__ = __author__
 __email__ = __author__
-__status__ = "Prototype"
-
-from .prototype import REGISTERED_TYPES, Prototype, PrototypeError
-from .metacwrap import MetaCWrap
+__status__ = 'Prototype'
 
 from .basecclass import BaseCClass
+from .basecenum import BaseCEnum
 from .basecvalue import BaseCValue
 
-from .clib import load
+from .cfile import CFILE
+from .clib import load, lib_name
 
-from .basecenum import BaseCEnum
+from .metacwrap import MetaCWrap
+from .prototype import REGISTERED_TYPES, Prototype, PrototypeError
+
+__all__ = ['BaseCClass', 'BaseCEnum', 'BaseCValue', 'CFILE',
+           'MetaCWrap', 'Prototype', 'load', 'lib_name']
