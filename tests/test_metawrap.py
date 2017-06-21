@@ -1,14 +1,15 @@
-from builtins import (int, str)
+from __future__ import absolute_import, division, print_function, unicode_literals
+from six import string_types
 import unittest
 import ctypes
 
-from cwrap import BaseCClass, Prototype, PrototypeError, load
-
+import ecl
+from cwrap import BaseCClass, Prototype, PrototypeError
 
 
 # Local copies so that the real ones don't get changed
 class TestUtilPrototype(Prototype):
-    lib = load("libert_util")
+    lib = ecl.load("libecl")
     def __init__(self, prototype, bind=False):
         super(TestUtilPrototype, self).__init__(TestUtilPrototype.lib, prototype, bind=bind)
 
@@ -34,8 +35,8 @@ class StringList(BaseCClass):
         if initial:
             for s in initial:
                 if isinstance(s, bytes):
-                    s = s.decode('ascii')
-                if isinstance(s, str):
+                    s.decode('ascii')
+                if isinstance(s, string_types):
                     self.append(s)
                 else:
                     raise TypeError("Item: %s not a string" % s)
@@ -54,8 +55,8 @@ class StringList(BaseCClass):
 
     def append(self, string):
         if isinstance(string, bytes):
-            string = string.decode('ascii')
-        if isinstance(string, str):
+            s.decode('ascii')
+        if isinstance(string, string_types):
             self._append(self, string)
         else:
             self._append(self, str(string))
@@ -88,7 +89,7 @@ class MetaWrapTest(unittest.TestCase):
 
     def test_prototype_known_return_type(self):
         stringlist = StringList(["B", "D", "F"])
-        func = TestUtilPrototype("test_stringlist_ref stringlist_alloc_shallow_copy(test_stringlist)")
+        func = TestUtilPrototype("test_stringlist_ref stringlist_alloc_shallow_copy(stringlist)")
         result = func(stringlist)
         self.assertIsInstance(result, StringList)
 
@@ -112,11 +113,10 @@ class MetaWrapTest(unittest.TestCase):
         def stringObj(c_ptr):
             char_ptr = ctypes.c_char_p(c_ptr)
             python_string = char_ptr.value
-            TestUtilPrototype.lib.free(c_ptr)
             return python_string.decode('ascii')
 
         Prototype.registerType("string_obj", stringObj)
 
         dateStamp  = TestUtilPrototype("string_obj util_alloc_date_stamp_utc()")
         date_stamp = dateStamp()
-        self.assertIsInstance(date_stamp, str)
+        self.assertIsInstance(date_stamp, string_types)

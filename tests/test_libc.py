@@ -3,7 +3,7 @@ from cwrap import BaseCClass, Prototype, load
 
 
 class LibCPrototype(Prototype):
-    lib = load( "libert_util" )
+    lib = load( None )
 
     def __init__(self , prototype , bind = False):
         super(LibCPrototype , self).__init__( LibCPrototype.lib , prototype , bind = bind)

@@ -4,7 +4,7 @@ from cwrap import BaseCValue, Prototype, load
 import unittest
 
 class TestPrototype(Prototype):
-    lib = load("libert_util")
+    lib = load( None )
 
     def __init__(self, prototype):
         super(TestPrototype, self).__init__(self.lib, prototype)
@@ -13,14 +13,14 @@ class UnsignedByteValue(BaseCValue):
     DATA_TYPE = c_ubyte
 
 
-class MaxDouble(BaseCValue):
-    TYPE_NAME = "pow_double"
+class SqrtDouble(BaseCValue):
+    TYPE_NAME = "sqrt_double"
     DATA_TYPE = c_double
 
 
 class BaseCValueTest(unittest.TestCase):
     def setUp(self):
-        self.double_max = TestPrototype("pow_double util_double_max(double, double)")
+        self.sqrt_double = TestPrototype("sqrt_double sqrt(double)")
 
 
     def test_illegal_type(self):
@@ -64,8 +64,9 @@ class BaseCValueTest(unittest.TestCase):
            UnsignedByteValue.from_param("exception")
 
 
-    def test_double_max(self):
-        double_max = self.double_max(2.97, 2.98)
+    def test_double_sqrt(self):
+        sqrt_value = self.sqrt_double(100)
 
-        self.assertIsInstance(double_max, MaxDouble)
-        self.assertEqual(double_max.value(), 2.98)
+        self.assertIsInstance(sqrt_value, SqrtDouble)
+        self.assertEqual(sqrt_value.value( ) , 10)
+        

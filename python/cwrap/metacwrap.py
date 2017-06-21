@@ -59,4 +59,5 @@ class MetaCWrap(type):
 
                 if attr.shouldBeBound():
                     method = MethodType(attr, None, cls)
+                    #method = six.create_bound_method(attr, cls)
                     setattr(cls, key, method)
