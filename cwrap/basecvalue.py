@@ -1,26 +1,31 @@
-#  Copyright (C) 2016 Statoil ASA, Norway.
+#  Copyright (C) 2016  Statoil ASA, Norway.
 #
-#  This file is part of cwrap.
+#  This file is part of ERT - Ensemble based Reservoir Tool.
 #
-#  cwrap is free software: you can redistribute it and/or modify it under the
-#  terms of the GNU General Public License as published by the Free Software
-#  Foundation, either version 3 of the License, or (at your option) any later
-#  version.
+#  ERT is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
 #
-#  cwrap is distributed in the hope that it will be useful, but WITHOUT ANY
-#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
-#  A PARTICULAR PURPOSE.
+#  ERT is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from ctypes import pointer, c_long, c_int, c_bool, c_float, c_double, c_byte, \
-    c_short, c_char, c_ubyte, c_ushort, c_uint, c_ulong
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
+
+import six
+
+from ctypes import (pointer, c_long, c_int, c_bool, c_float, c_double, c_byte,
+                    c_short, c_char, c_ubyte, c_ushort, c_uint, c_ulong)
 
 from .metacwrap import MetaCWrap
 
+@six.add_metaclass(MetaCWrap)
 class BaseCValue(object):
-    __metaclass__ = MetaCWrap
     DATA_TYPE = None
     LEGAL_TYPES = [c_byte, c_ubyte, c_short, c_ushort, c_int, c_uint, c_long, c_ulong, c_bool, c_char, c_float, c_double]
 

@@ -1,0 +1,7 @@
+language: python
+
+install:
+ - pip install six
+
+script:
+  - python -m unittest discover -v -s tests
