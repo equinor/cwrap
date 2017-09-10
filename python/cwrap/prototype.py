@@ -81,6 +81,14 @@ class Prototype(object):
         self._resolved = False
 
 
+    def have_function(self, function_name):
+        try:
+            func = getattr(self._lib, function_name)
+            return True
+        except AttributeError:
+            return False
+
+
     def _parseType(self, type_name):
         """Convert a prototype definition type from string to a ctypes legal type."""
         type_name = type_name.strip()
