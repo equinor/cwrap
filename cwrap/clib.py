@@ -78,14 +78,11 @@ def load( lib, so_version = None, path = None, so_ext = None):
     """
 
     dll = None
-    lib_files = [ lib_name( lib , path = path , so_version = so_version) ]
-
-    if so_ext:
-        lib_files.append( lib_name( lib, path = path, so_version = so_version, so_ext = so_ext ) )
-
-    if path:
-        lib_files.append( lib_name( lib , path = None , so_version = so_version ) )
-        lib_files.append( lib_name( lib , path = None , so_version = so_version, so_ext = so_ext ) )
+    lib_files = [ lib_name( lib, path = None, so_version = so_version ),
+                  lib_name( lib, path = None, so_version = so_version, so_ext = so_ext ),
+                  lib_name( lib, path = path, so_version = so_version ),
+                  lib_name( lib, path = path, so_version = so_version, so_ext = so_ext )
+                ]
 
     for lib_file in lib_files:
         try:
