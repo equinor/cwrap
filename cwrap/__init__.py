@@ -28,11 +28,13 @@ the process of interacting with a C library:
      FILE pointer.
 """
 
+try: from .version import version as __version__
+except ImportError: __version__ = '0.0.0'
+
 __author__ = 'Jean-Paul Balabanian, Joakim Hove, and PG Drange'
 __copyright__ = 'Copyright 2016, Statoil ASA'
 __credits__ = __author__
 __license__ = 'GPL'
-__version__ = '1.1.1'
 __maintainer__ = __author__
 __email__ = __author__
 __status__ = 'Prototype'

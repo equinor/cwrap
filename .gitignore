@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# don't track setuptools-generated version
+cwrap/version.py

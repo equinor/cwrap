@@ -16,7 +16,7 @@ library https://github.com/statoil/libecl, but isn't tied to it.
 """
 
 setup(name='cwrap',
-      version='1.1.2',
+      use_scm_version={'write_to': 'cwrap/version.py' },
       description='cwrap - ctypes blanket',
       long_description=long_description,
       author='Statoil ASA',
