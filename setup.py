@@ -38,5 +38,6 @@ setup(name='cwrap',
           'Programming Language :: Python :: 2.7',
           'Topic :: Software Development :: Libraries',
           'Topic :: Utilities'
-      ]
+      ],
+      test_suite='tests',
 )
