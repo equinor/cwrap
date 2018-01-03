@@ -1,0 +1,17 @@
+Source: cwrap
+Priority: extra
+Maintainer: Arne Morten Kvarving <arne.morten.kvarving@sintef.no>
+Build-Depends: debhelper (>= 8.0.0), dh-python,
+               python,  python-six,  python-setuptools
+Standards-Version: 3.9.2
+Section: libs
+Homepage: http://statoil.no
+Vcs-Git: git://github.com/Statoil/cwrap
+Vcs-Browser: https://github.com/Statoil/cwrap
+
+Package: python-cwrap
+Section: python
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-six
+Description: Utilities for wrapping C code from python
+ python-cwrap is a package helping to write python bindings for C libraries
