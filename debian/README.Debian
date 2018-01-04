@@ -1,0 +1,4 @@
+cwrap
+-----------------
+
+cwrap is a python wrapper around C code, building upon ctypes.
