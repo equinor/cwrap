@@ -18,6 +18,7 @@ from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
 
 import six
+from weakref import ref
 
 import ctypes
 from .metacwrap import MetaCWrap
@@ -34,7 +35,7 @@ class BaseCClass(object):
             raise ValueError("The pointer value is negative! This may be correct, but usually is not!")
 
         self.__c_pointer = c_pointer
-        self.__parent = parent
+        self.__parent = ref(parent) if parent is not None else None
         self.__is_reference = is_reference
 
     def __new__(cls, *more, **kwargs):
@@ -85,12 +86,12 @@ class BaseCClass(object):
 
     def convertToCReference(self, parent):
         self.__is_reference = True
-        self.__parent = parent
+        self.__parent = ref(parent) if parent is not None else None
 
 
     def setParent(self, parent=None):
         if self.__is_reference:
-            self.__parent = parent
+            self.__parent = ref(parent) if parent is not None else None
         else:
             raise UserWarning("Can only set parent on reference types!")
 
@@ -101,7 +102,7 @@ class BaseCClass(object):
         return self.__is_reference
 
     def parent(self):
-        return self.__parent
+        return self.__parent() if parent is not None else None
 
     def __eq__(self, other):
         # This is the last resort comparison function; it will do a
