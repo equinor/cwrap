@@ -17,27 +17,73 @@
 import ctypes
 import inspect
 import re
-
+import six
 import sys
+from types import MethodType
+
 
 class TypeDefinition(object):
-    def __init__(self, type_class_or_function, is_return_type, storage_type):
+    def __init__(self,
+                 type_class_or_function,
+                 is_return_type,
+                 storage_type,
+                 errcheck):
         self.storage_type = storage_type
         self.is_return_type = is_return_type
         self.type_class_or_function = type_class_or_function
 
+        # Note that errcheck (python name) can do more than error checking. See
+        # toStr in the CStringHelper class.
+        self.errcheck = errcheck
+
+
+if six.PY3:
+    class CStringHelper(object):
+        @classmethod
+        def from_param(cls, value):
+            if value is None:
+                return None
+            elif isinstance(value, bytes):
+                return value
+            elif isinstance(value, ctypes.Array):
+                return value
+            else:
+                e = value.encode()
+                return e
+
+        @staticmethod
+        def toStr(result, func, arguments):
+            """
+            Transform a foreign char* type to str (if python 3).
+
+            ctypes functions have an attribute called errcheck that can not
+            only be used for error checking but also to alter the result. If
+            errcheck is defined, the value returned from that function is what
+            is returned from the foreign function call. In this case, C returns
+            strings in the form of zero-terminated char* strings. To use these
+            as python strings (str) they must be decoded.
+            """
+            if result is None or result == 0:
+                return None
+            return result.decode()
 
 REGISTERED_TYPES = {}
 """:type: dict[str,TypeDefinition]"""
 
 
-def _registerType(type_name, type_class_or_function, is_return_type=True, storage_type=None):
+def _registerType(type_name,
+                  type_class_or_function,
+                  is_return_type=True,
+                  storage_type=None,
+                  errcheck=None):
     if type_name in REGISTERED_TYPES:
         raise PrototypeError("Type: '%s' already registered!" % type_name)
 
-    REGISTERED_TYPES[type_name] = TypeDefinition(type_class_or_function, is_return_type, storage_type)
+    REGISTERED_TYPES[type_name] = TypeDefinition(type_class_or_function,
+                                                 is_return_type,
+                                                 storage_type,
+                                                 errcheck)
 
-    # print("Registered: %s for class: %s" % (type_name, repr(type_class_or_function)))
 
 _registerType("void", None)
 _registerType("void*", ctypes.c_void_p)
@@ -54,15 +100,25 @@ _registerType("bool*", ctypes.POINTER(ctypes.c_bool))
 _registerType("long", ctypes.c_long)
 _registerType("long*", ctypes.POINTER(ctypes.c_long))
 _registerType("char", ctypes.c_char)
-_registerType("char*", ctypes.c_char_p)
-_registerType("char**", ctypes.POINTER(ctypes.c_char_p))
+if six.PY2:
+    _registerType("char*", ctypes.c_char_p)
+    _registerType("char**", ctypes.POINTER(ctypes.c_char_p))
+if six.PY3:
+    _registerType(
+        "char*",
+        CStringHelper,
+        storage_type=ctypes.c_char_p,
+        errcheck=CStringHelper.toStr)
 _registerType("float", ctypes.c_float)
 _registerType("float*", ctypes.POINTER(ctypes.c_float))
 _registerType("double", ctypes.c_double)
 _registerType("double*", ctypes.POINTER(ctypes.c_double))
 _registerType("py_object", ctypes.py_object)
 
-PROTOTYPE_PATTERN = "(?P<return>[a-zA-Z][a-zA-Z0-9_*]*) +(?P<function>[a-zA-Z]\w*) *[(](?P<arguments>[a-zA-Z0-9_*, ]*)[)]"
+PROTOTYPE_PATTERN = ("(?P<return>[a-zA-Z][a-zA-Z0-9_*]*)"
+                     " +(?P<function>[a-zA-Z]\w*)"
+                     " *[(](?P<arguments>[a-zA-Z0-9_*, ]*)[)]")
+
 
 class PrototypeError(Exception):
     pass
@@ -87,7 +143,9 @@ class Prototype(object):
 
         if type_name in REGISTERED_TYPES:
             type_definition = REGISTERED_TYPES[type_name]
-            return type_definition.type_class_or_function, type_definition.storage_type
+            return (type_definition.type_class_or_function,
+                    type_definition.storage_type,
+                    type_definition.errcheck)
         raise ValueError("Unknown type: %s" % type_name)
 
 
@@ -115,14 +173,14 @@ class Prototype(object):
             if not restype in REGISTERED_TYPES or not REGISTERED_TYPES[restype].is_return_type:
                 sys.stderr.write("The type used as return type: %s is not registered as a return type.\n" % restype)
 
-                return_type = self._parseType(restype)
+                return_type, storage_type, errcheck = self._parseType(restype)
 
                 if inspect.isclass(return_type):
                     sys.stderr.write("  Correct type may be: %s_ref or %s_obj.\n" % (restype, restype))
 
                 return None
 
-            return_type, storage_type = self._parseType(restype)
+            return_type, storage_type, errcheck = self._parseType(restype)
 
             func.restype = return_type
 
@@ -134,6 +192,9 @@ class Prototype(object):
 
                 func.errcheck = returnFunction
 
+            if errcheck is not None:
+                func.errcheck = errcheck
+
             if len(arguments) == 1 and arguments[0].strip() == "":
                 func.argtypes = []
             else:
@@ -144,19 +205,28 @@ class Prototype(object):
 
             self._func = func
 
-
     def __call__(self, *args):
         if not self._resolved:
             self.resolve()
             self._resolved = True
-
         if self._func is None:
             if self._allow_attribute_error:
                 raise NotImplementedError("Function:%s has not been properly resolved" % self.__name__)
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
-
         return self._func(*args)
+
+    def __get__(self, instance, owner):
+        if not self._resolved:
+            self.resolve()
+            self._resolved = True
+        if self.shouldBeBound():
+            if six.PY2:
+                return MethodType(self, instance, owner)
+            if six.PY3:
+                return MethodType(self, instance)
+        else:
+            return self
 
     def __repr__(self):
         bound = ""

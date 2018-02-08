@@ -5,9 +5,6 @@ from cwrap import BaseCClass
 
 class BaseCClassTest(unittest.TestCase):
 
-    def test_none_assertion(self):
-        self.assertFalse(None > 0)
-
     def test_creation(self):
         with self.assertRaises(ValueError):
             obj = BaseCClass(0)
