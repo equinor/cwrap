@@ -4,7 +4,7 @@ import tempfile
 
 import unittest
 
-from cwrap import Prototype, CFILE, load
+from cwrap import Prototype, CFILE, load, open as copen
 
 # Local copies so that the real ones don't get changed
 class TestUtilPrototype(Prototype):
@@ -25,15 +25,15 @@ class CFILETest(unittest.TestCase):
         with open("test", "w") as f:
             f.write("some content")
 
-        with open("test", "r") as f:
+        with copen("test", "r") as f:
             cfile = CFILE(f)
-            self.assertEqual(fileno(cfile), f.fileno())
+            self.assertTrue(fileno(cfile))
 
         os.chdir(cwd)
         shutil.rmtree( d )
 
 
-        
+
     def test_cfile_error(self):
         with self.assertRaises(TypeError):
             cfile = CFILE("some text")

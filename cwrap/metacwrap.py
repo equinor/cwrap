@@ -56,8 +56,3 @@ class MetaCWrap(type):
             if isinstance(attr, Prototype):
                 attr.resolve()
                 attr.__name__ = key
-
-                if attr.shouldBeBound():
-                    method = MethodType(attr, None, cls)
-                    #method = six.create_bound_method(attr, cls)
-                    setattr(cls, key, method)

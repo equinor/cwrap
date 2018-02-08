@@ -31,23 +31,23 @@ the process of interacting with a C library:
 try: from .version import version as __version__
 except ImportError: __version__ = '0.0.0'
 
-__author__ = 'Jean-Paul Balabanian, Joakim Hove, and PG Drange'
+__author__ = 'Statoil ASA'
 __copyright__ = 'Copyright 2016, Statoil ASA'
 __credits__ = __author__
 __license__ = 'GPL'
 __maintainer__ = __author__
-__email__ = __author__
+__email__ = 'fg_gpl@statoil.com'
 __status__ = 'Prototype'
 
 from .basecclass import BaseCClass
 from .basecenum import BaseCEnum
 from .basecvalue import BaseCValue
 
-from .cfile import CFILE
+from .cfile import CFILE, copen as open
 from .clib import load, lib_name
 
 from .metacwrap import MetaCWrap
 from .prototype import REGISTERED_TYPES, Prototype, PrototypeError
 
-__all__ = ['BaseCClass', 'BaseCEnum', 'BaseCValue', 'CFILE',
+__all__ = ['BaseCClass', 'BaseCEnum', 'BaseCValue', 'CFILE', 'open',
            'MetaCWrap', 'Prototype', 'load', 'lib_name']
