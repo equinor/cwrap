@@ -102,13 +102,13 @@ _registerType("long*", ctypes.POINTER(ctypes.c_long))
 _registerType("char", ctypes.c_char)
 if six.PY2:
     _registerType("char*", ctypes.c_char_p)
-    _registerType("char**", ctypes.POINTER(ctypes.c_char_p))
 if six.PY3:
     _registerType(
         "char*",
         CStringHelper,
         storage_type=ctypes.c_char_p,
         errcheck=CStringHelper.toStr)
+_registerType("char**", ctypes.POINTER(ctypes.c_char_p))
 _registerType("float", ctypes.c_float)
 _registerType("float*", ctypes.POINTER(ctypes.c_float))
 _registerType("double", ctypes.c_double)
