@@ -50,6 +50,14 @@ class BaseCEnum(object):
         return c_class_object.value
 
     @classmethod
+    def from_string(cls, name):
+        for enum in cls.enum_namespace[cls]:
+            if enum.name == name:
+                return enum
+
+        raise ValueError("No such enum:%s" % name)
+
+    @classmethod
     def addEnum(cls, name, value):
         name = str(name)
         if not isinstance(value, int):
