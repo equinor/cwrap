@@ -90,3 +90,17 @@ class BaseCEnumTest(unittest.TestCase):
         self.assertEqual(str(tri), 'THREE')
         self.assertEqual(tri.name, 'THREE')
         self.assertEqual(tri.value, 3)
+
+
+    def test_from_name(self):
+        class EnumName(BaseCEnum):
+            pass
+
+        EnumName.addEnum("ONE", 1)
+        EnumName.addEnum("TWO", 2)
+
+        with self.assertRaises(ValueError):
+            enum = EnumName.from_string("No-not-this")
+
+        one = EnumName.from_string("ONE")
+        self.assertEqual(one, EnumName.ONE)
