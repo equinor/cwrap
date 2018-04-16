@@ -38,8 +38,7 @@ import os
 so_extension = {"linux"  : "so",
                 "linux2" : "so",
                 "linux3" : "so",
-                "win32"  : "dll",
-                "win64"  : "dll",
+                "windows": "dll",
                 "darwin" : "dylib" }
 
 
