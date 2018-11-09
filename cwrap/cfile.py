@@ -14,6 +14,7 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
+import os
 import six
 import sys
 from .prototype import Prototype
@@ -89,7 +90,8 @@ if six.PY3:
     from .clib import load as cwrapload
 
     class LibcPrototype(Prototype):
-        lib = cwrapload(None)
+        # Load the c standard library (on Linux passsing None does the trick)
+        lib = cwrapload('msvcrt' if os.name == 'nt' else None)
 
         def __init__(self, prototype, bind=False, allow_attribute_error=False):
             super(LibcPrototype, self).__init__(

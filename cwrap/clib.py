@@ -46,11 +46,13 @@ so_extension = {"linux"  : "so",
 # the current runnning process, i.e. like dlopen( NULL ). We must
 # special case this to avoid creating the bogus argument 'None.so'.
 
-def lib_name(lib , path = None , so_version = "", so_ext = None):
+def lib_name(lib , path = None , so_version = None, so_ext = None):
     if lib is None:
         return None
     else:
         platform_key = platform.system().lower()
+        if so_version is None:
+            so_version = ''
 
         if so_ext:
             so_name = "%s.%s%s" % (lib, so_ext, so_version)
