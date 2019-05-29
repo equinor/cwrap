@@ -214,7 +214,26 @@ class Prototype(object):
                 raise NotImplementedError("Function:%s has not been properly resolved" % self.__name__)
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
-        return self._func(*args)
+        try:
+            return self._func(*args)
+        except ctypes.ArgumentError as err:
+            # Reraise the exception as TypeError with a suitable message
+            # This way we don't expose ArgumentError which is a member of
+            # ctypes and, as such, just an implementation detail.
+            # ArgumentError.message will look like this
+            #   `argument 4: <type 'exceptions.TypeError'>: wrong type`
+            # The only useful information here is the index of the argument 
+            tokens = re.split("[ :]", err.message)
+            argidx = int(tokens[1]) - 1  # it starts from 1
+            raise TypeError((
+                "Argument {argidx}: cannot create a {argtype} from the given "
+                "value {actval} ({acttype})")
+                .format(argtype=self._func.argtypes[argidx],
+                        argidx=argidx,
+                        actval=repr(args[argidx]),
+                        acttype=type(args[argidx]),
+                        )
+                )
 
     def __get__(self, instance, owner):
         if not self._resolved:
