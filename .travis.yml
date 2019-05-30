@@ -18,6 +18,7 @@ deploy:
   - provider: pypi
     user: statoil-travis
     distributions: bdist_wheel sdist
+    skip_existing: true
     password:
       secure: aHAmMPFv5NLN4/cPf6oZc8YLH/ujz3TrjdhalhRT2zEbDP06xpPWyIxGb2hUM0JGs12SCTaDB9RRnTf0ZPipdPiFXJS5WcCJw/LuH+uD+zJCkQJY+3XtmXYlFkty4AC6jh4sEcTJJoLjDipEIinAAifAd/37G2p3nuL02FBvtZlUb4MPNvjd/7Qu6XT3h9CP723YJvscptgrroCntJ1DIbCEhv1zPrx2vExvLentqQSTVaNafvERlPO820LRurK5DaDSorndcF1cPfe7UMJp30QKJwgFbPyRaBhieI6IVedg0RCIInq+imki9q70egdP6+NzwJqZOpoVtwjcod2zQjzafPNeDU2S4OSMhyU9v+YuwBOFx+ITFMfE1VNMEChHgmnP+IwuD0flckKXoWgu9bR7eH68zNZj+gd3qwz/MTB5yStiwS0QCEdgxrjv0cYYowXyOTEQDC54yh1Lyh5vPd0QziqZrMlG/vKxCSkICAk16bd+ooVv8c640AL1viJNQuXDPM0GogCSVcz4hauB6KM+PLX2utpUpuAtvtxFz/j0C5QNGHvSNYondZ9hXB0nn6Pl16eSkObvnJtxJ4iquG0AiZ25mW27Q3mSktE3CIx/vr5bA+aTRJrFzMw8FAVyV3XXEW0IUgGJkRmwetSPhLHoptNmufOtUsGvsI60c2I=
     on:
