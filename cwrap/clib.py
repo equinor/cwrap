@@ -42,7 +42,7 @@ so_extension = {"linux"  : "so",
                 "darwin" : "dylib" }
 
 
-# Passing None to the CDLL() function means to open a lib handle to
+# Passing None to the PyDLL() function means to open a lib handle to
 # the current runnning process, i.e. like dlopen( NULL ). We must
 # special case this to avoid creating the bogus argument 'None.so'.
 
@@ -70,7 +70,7 @@ def lib_name(lib , path = None , so_version = None, so_ext = None):
 
 
 def load( lib, so_version = None, path = None, so_ext = None):
-    """Thin wrapper around the ctypes.CDLL function for loading shared
+    """Thin wrapper around the ctypes.PyDLL function for loading shared
     library.
 
     If the path argument is non Null the function will first try to
@@ -87,7 +87,7 @@ def load( lib, so_version = None, path = None, so_ext = None):
 
     for lib_file in lib_files:
         try:
-            dll = ctypes.CDLL(lib_file , ctypes.RTLD_GLOBAL)
+            dll = ctypes.PyDLL(lib_file, ctypes.RTLD_GLOBAL)
             return dll
         except Exception as exc:
             error = exc
