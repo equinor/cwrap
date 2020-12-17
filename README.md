@@ -2,8 +2,19 @@
 
 cwrap is a Python wrapper around C code, building upon ctypes.
 
-To install, first install ctypes.
-
 # Examples
 
-See cwrap/examples/
+See `examples/`
+
+# Installing
+```
+pip install cwrap
+```
+
+# Running tests
+Clone this repo and cd into it, then:
+
+```
+pip install -r requirements.txt
+python -m unittest discover -v -s tests
+```
