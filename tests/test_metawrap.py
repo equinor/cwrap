@@ -2,13 +2,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from six import string_types
 import unittest
 import ctypes
+import os
 
 from cwrap import BaseCClass, Prototype, PrototypeError, load
 
 
 # Local copies so that the real ones don't get changed
 class TestUtilPrototype(Prototype):
-    lib = load( None)
+    lib = load("msvcrt" if os.name == "nt" else None)
     def __init__(self, prototype, bind=False):
         super(TestUtilPrototype, self).__init__(TestUtilPrototype.lib, prototype, bind=bind)
 
