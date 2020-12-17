@@ -1,0 +1,62 @@
+name: Python package
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install --upgrade setuptools
+
+    - name: Test
+      run: |
+        python -m unittest discover -v -s tests
+
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    # If this is a tagged release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Build wheel
+      run: |
+        pip install --upgrade pip wheel setuptools
+        pip wheel . --no-deps -w dist
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.3.1
+      with:
+        user: statoil-travis
+        password: ${{ secrets.pypi_password }}
