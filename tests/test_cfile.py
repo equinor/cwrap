@@ -8,7 +8,7 @@ from cwrap import Prototype, CFILE, load, open as copen
 
 # Local copies so that the real ones don't get changed
 class TestUtilPrototype(Prototype):
-    lib = load(None)
+    lib = load("msvcrt" if os.name == "nt" else None)
     def __init__(self, prototype, bind=False):
         super(TestUtilPrototype, self).__init__(TestUtilPrototype.lib, prototype, bind=bind)
 
@@ -27,7 +27,8 @@ class CFILETest(unittest.TestCase):
 
         with copen("test", "r") as f:
             cfile = CFILE(f)
-            self.assertTrue(fileno(cfile))
+            if os.name != "nt":
+                self.assertTrue(fileno(cfile))
 
         os.chdir(cwd)
         shutil.rmtree( d )

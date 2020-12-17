@@ -1,9 +1,10 @@
 import unittest
 from cwrap import BaseCClass, Prototype, load
+import os
 
 
 class LibCPrototype(Prototype):
-    lib = load(None)
+    lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype, bind=False, allow_attribute_error=False):
         super(LibCPrototype, self).__init__(

@@ -1,10 +1,11 @@
 from ctypes import c_ubyte, c_double
 from cwrap import BaseCValue, Prototype, load
+import os
 
 import unittest
 
 class TestPrototype(Prototype):
-    lib = load( None )
+    lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype):
         super(TestPrototype, self).__init__(self.lib, prototype)
