@@ -215,6 +215,8 @@ class Prototype(object):
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
         try:
+            if self.shouldBeBound() and not args[0]._address():
+                raise AttributeError("self is Null")
             return self._func(*args)
         except ctypes.ArgumentError as err:
             # Reraise the exception as TypeError with a suitable message
