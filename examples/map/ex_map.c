@@ -1,7 +1,11 @@
 #include <map>
 #include <string>
 
+// For Linux:
 // g++ -std=c++11 -shared -fPIC -Wl,-soname,ex_map.so.1 -o ex_map.so ex_map.c
+
+// For macOS:
+// g++ -std=c++11 -dynamiclib -o ex_map.dylib ex_map.c
 
 extern "C" {
 
