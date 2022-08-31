@@ -223,7 +223,8 @@ class Prototype(object):
             # ArgumentError.message will look like this
             #   `argument 4: <type 'exceptions.TypeError'>: wrong type`
             # The only useful information here is the index of the argument 
-            tokens = re.split("[ :]", err.message)
+            errMsg = err.message if hasattr(err, "message") else str(err)
+            tokens = re.split("[ :]", errMsg)
             argidx = int(tokens[1]) - 1  # it starts from 1
             raise TypeError((
                 "Argument {argidx}: cannot create a {argtype} from the given "
@@ -233,7 +234,7 @@ class Prototype(object):
                         actval=repr(args[argidx]),
                         acttype=type(args[argidx]),
                         )
-                )
+                ) from err
 
     def __get__(self, instance, owner):
         if not self._resolved:
