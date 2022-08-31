@@ -55,3 +55,6 @@ class LibCTest(unittest.TestCase):
 
         with self.assertRaises(NotImplementedError):
             lib._missing_function(100)
+
+        with self.assertRaises(TypeError):
+            self.assertEqual(lib.abs("SPAM"), 3)
