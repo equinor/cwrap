@@ -45,6 +45,9 @@ class BaseCClass(object):
 
         return obj
 
+    def is_initialized(self):
+        return self._address() is not None
+
     def _address(self):
         return self.__c_pointer
 

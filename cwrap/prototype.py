@@ -214,6 +214,9 @@ class Prototype(object):
                 raise NotImplementedError("Function:%s has not been properly resolved" % self.__name__)
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
+        if self._bind and not args[0].is_initialized():
+            raise ValueError("Called bound function with uninitialized object of type "
+                             f"{type(args[0]).__name__}")
         try:
             return self._func(*args)
         except ctypes.ArgumentError as err:
