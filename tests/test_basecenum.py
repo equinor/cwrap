@@ -1,10 +1,10 @@
+import os
 import unittest
 
-from cwrap import BaseCEnum
+from cwrap import BaseCEnum, Prototype, load
 
 
 class BaseCEnumTest(unittest.TestCase):
-
     def test_base_c_enum(self):
         class enum(BaseCEnum):
             pass
@@ -33,18 +33,15 @@ class BaseCEnumTest(unittest.TestCase):
 
         self.assertEqual(str(enum.ONE), "ONE")
 
-
         self.assertEqual(enum.ONE + enum.TWO, enum.THREE)
         self.assertEqual(enum.ONE + enum.FOUR, 5)
 
         with self.assertRaises(ValueError):
             e = enum(5)
 
-
         self.assertEqual(enum.THREE & enum.ONE, enum.ONE)
         self.assertEqual(enum.ONE | enum.TWO, enum.THREE)
         self.assertEqual(enum.THREE ^ enum.TWO, enum.ONE)
-
 
         with self.assertRaises(AssertionError):
             e = enum.ONE + enum2.ONE
@@ -57,7 +54,6 @@ class BaseCEnumTest(unittest.TestCase):
 
         with self.assertRaises(AssertionError):
             e = enum.ONE ^ enum2.ONE
-
 
     def test_in_operator(self):
         class PowerOf2(BaseCEnum):
@@ -87,10 +83,9 @@ class BaseCEnumTest(unittest.TestCase):
         tri = MyLonelyEnum.THREE
 
         self.assertEqual(repr(tri), 'MyLonelyEnum(name = "THREE", value = 3)')
-        self.assertEqual(str(tri), 'THREE')
-        self.assertEqual(tri.name, 'THREE')
+        self.assertEqual(str(tri), "THREE")
+        self.assertEqual(tri.name, "THREE")
         self.assertEqual(tri.value, 3)
-
 
     def test_from_name(self):
         class EnumName(BaseCEnum):
@@ -104,3 +99,25 @@ class BaseCEnumTest(unittest.TestCase):
 
         one = EnumName.from_string("ONE")
         self.assertEqual(one, EnumName.ONE)
+
+
+def test_that_enum_can_be_bind_methods():
+    class LibCPrototype(Prototype):
+        lib = load("msvcrt" if os.name == "nt" else None)
+
+        def __init__(self, prototype, bind=False, allow_attribute_error=False):
+            super(LibCPrototype, self).__init__(
+                LibCPrototype.lib,
+                prototype,
+                bind=bind,
+                allow_attribute_error=allow_attribute_error,
+            )
+
+    class Endumb(BaseCEnum):
+        TYPE_NAME = "endumb"
+        SOME_VALUE = None
+        SOME_OTHER_VALUE = None
+        abs = LibCPrototype("int abs(endumb)", bind=True)
+
+    Endumb.addEnum("SOME_VALUE", -1)
+    assert Endumb.SOME_VALUE.abs() == 1
