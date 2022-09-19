@@ -16,10 +16,12 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import ctypes
+
 import six
 
-import ctypes
 from .metacwrap import MetaCWrap
+
 
 @six.add_metaclass(MetaCWrap)
 class BaseCEnum(object):
@@ -87,6 +89,9 @@ class BaseCEnum(object):
 
         return False
 
+    def is_initialized(self):
+        return True
+
     def __hash__(self):
         return hash(self.value)
 
@@ -108,7 +113,6 @@ class BaseCEnum(object):
         self.__assertOtherIsSameType(other)
         value = self.value | other.value
         return self.__resolveOrCreateEnum(value)
-
 
     def __xor__(self, other):
         self.__assertOtherIsSameType(other)
@@ -150,16 +154,22 @@ class BaseCEnum(object):
         return None
 
     def __assertOtherIsSameType(self, other):
-        assert isinstance(other, self.__class__), "Can only operate on enums of same type: %s =! %s" % (
-            self.__class__.__name__, other.__class__.__name__)
-
+        assert isinstance(
+            other, self.__class__
+        ), "Can only operate on enums of same type: %s =! %s" % (
+            self.__class__.__name__,
+            other.__class__.__name__,
+        )
 
     @classmethod
     def populateEnum(cls, library, enum_provider_function):
         try:
             func = getattr(library, enum_provider_function)
         except AttributeError:
-            raise ValueError("Could not find enum description function: %s - can not load enum: %s." % (enum_provider_function, cls.__name__))
+            raise ValueError(
+                "Could not find enum description function: %s - can not load enum: %s."
+                % (enum_provider_function, cls.__name__)
+            )
 
         func.restype = ctypes.c_char_p
         func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]
@@ -174,4 +184,3 @@ class BaseCEnum(object):
                 index += 1
             else:
                 break
-
