@@ -14,16 +14,15 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-
-import six
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import ctypes
+from abc import ABC, abstractmethod
+
 from .metacwrap import MetaCWrap
 
-@six.add_metaclass(MetaCWrap)
-class BaseCClass(object):
+
+class BaseCClass(ABC, metaclass=MetaCWrap):
     namespaces = {}
 
     def __init__(self, c_pointer, parent=None, is_reference=False):
@@ -120,8 +119,9 @@ class BaseCClass(object):
         # underlying C pointer.
         return hash(self.__c_pointer)
 
+    @abstractmethod
     def free(self):
-        raise NotImplementedError("A BaseCClass requires a free method implementation!")
+        pass
 
     def _create_repr(self, args = ''):
         """Representation on the form (e.g.) 'EclFile(...) at 0x1729'."""

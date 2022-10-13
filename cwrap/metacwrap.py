@@ -15,7 +15,7 @@
 #  for more details.
 
 import re
-from types import MethodType
+from abc import ABCMeta
 
 from .prototype import Prototype
 
@@ -25,7 +25,7 @@ def snakeCase(name):
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
-class MetaCWrap(type):
+class MetaCWrap(ABCMeta, type):
     def __init__(cls, name, bases, attrs):
         super(MetaCWrap, cls).__init__(name, bases, attrs)
 
