@@ -126,6 +126,9 @@ class BaseCEnum(object):
 
     def __int__(self):
         return self.value
+    
+    def __index__(self):
+        return self.value
 
     def __contains__(self, item):
         return self & item == item
