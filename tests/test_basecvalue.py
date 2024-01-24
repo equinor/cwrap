@@ -4,11 +4,11 @@ import os
 
 import unittest
 
-class TestPrototype(Prototype):
+class ForTestPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype):
-        super(TestPrototype, self).__init__(self.lib, prototype)
+        super(ForTestPrototype, self).__init__(self.lib, prototype)
 
 class UnsignedByteValue(BaseCValue):
     DATA_TYPE = c_ubyte
@@ -21,7 +21,7 @@ class SqrtDouble(BaseCValue):
 
 class BaseCValueTest(unittest.TestCase):
     def setUp(self):
-        self.sqrt_double = TestPrototype("sqrt_double sqrt(double)")
+        self.sqrt_double = ForTestPrototype("sqrt_double sqrt(double)")
 
 
     def test_illegal_type(self):

@@ -17,17 +17,14 @@
 import ctypes
 import inspect
 import re
-import six
 import sys
 from types import MethodType
 
+import six
+
 
 class TypeDefinition(object):
-    def __init__(self,
-                 type_class_or_function,
-                 is_return_type,
-                 storage_type,
-                 errcheck):
+    def __init__(self, type_class_or_function, is_return_type, storage_type, errcheck):
         self.storage_type = storage_type
         self.is_return_type = is_return_type
         self.type_class_or_function = type_class_or_function
@@ -38,6 +35,7 @@ class TypeDefinition(object):
 
 
 if six.PY3:
+
     class CStringHelper(object):
         @classmethod
         def from_param(cls, value):
@@ -67,22 +65,24 @@ if six.PY3:
                 return None
             return result.decode()
 
+
 REGISTERED_TYPES = {}
 """:type: dict[str,TypeDefinition]"""
 
 
-def _registerType(type_name,
-                  type_class_or_function,
-                  is_return_type=True,
-                  storage_type=None,
-                  errcheck=None):
+def _registerType(
+    type_name,
+    type_class_or_function,
+    is_return_type=True,
+    storage_type=None,
+    errcheck=None,
+):
     if type_name in REGISTERED_TYPES:
         raise PrototypeError("Type: '%s' already registered!" % type_name)
 
-    REGISTERED_TYPES[type_name] = TypeDefinition(type_class_or_function,
-                                                 is_return_type,
-                                                 storage_type,
-                                                 errcheck)
+    REGISTERED_TYPES[type_name] = TypeDefinition(
+        type_class_or_function, is_return_type, storage_type, errcheck
+    )
 
 
 _registerType("void", None)
@@ -108,16 +108,19 @@ if six.PY3:
         "char*",
         CStringHelper,
         storage_type=ctypes.c_char_p,
-        errcheck=CStringHelper.toStr)
+        errcheck=CStringHelper.toStr,
+    )
 _registerType("float", ctypes.c_float)
 _registerType("float*", ctypes.POINTER(ctypes.c_float))
 _registerType("double", ctypes.c_double)
 _registerType("double*", ctypes.POINTER(ctypes.c_double))
 _registerType("py_object", ctypes.py_object)
 
-PROTOTYPE_PATTERN = ("(?P<return>[a-zA-Z][a-zA-Z0-9_*]*)"
-                     " +(?P<function>[a-zA-Z]\w*)"
-                     " *[(](?P<arguments>[a-zA-Z0-9_*, ]*)[)]")
+PROTOTYPE_PATTERN = (
+    r"(?P<return>[a-zA-Z][a-zA-Z0-9_*]*)"
+    r" +(?P<function>[a-zA-Z]\w*)"
+    r" *[(](?P<arguments>[a-zA-Z0-9_*, ]*)[)]"
+)
 
 
 class PrototypeError(Exception):
@@ -127,7 +130,7 @@ class PrototypeError(Exception):
 class Prototype(object):
     pattern = re.compile(PROTOTYPE_PATTERN)
 
-    def __init__(self, lib, prototype, bind=False, allow_attribute_error = False):
+    def __init__(self, lib, prototype, bind=False, allow_attribute_error=False):
         super(Prototype, self).__init__()
         self._lib = lib
         self._prototype = prototype
@@ -143,12 +146,12 @@ class Prototype(object):
 
         if type_name in REGISTERED_TYPES:
             type_definition = REGISTERED_TYPES[type_name]
-            return (type_definition.type_class_or_function,
-                    type_definition.storage_type,
-                    type_definition.errcheck)
+            return (
+                type_definition.type_class_or_function,
+                type_definition.storage_type,
+                type_definition.errcheck,
+            )
         raise ValueError("Unknown type: %s" % type_name)
-
-
 
     def shouldBeBound(self):
         return self._bind
@@ -168,15 +171,27 @@ class Prototype(object):
             except AttributeError:
                 if self._allow_attribute_error:
                     return
-                raise PrototypeError("Can not find function: %s in library: %s" % (function_name , self._lib))
+                raise PrototypeError(
+                    "Can not find function: %s in library: %s"
+                    % (function_name, self._lib)
+                )
 
-            if not restype in REGISTERED_TYPES or not REGISTERED_TYPES[restype].is_return_type:
-                sys.stderr.write("The type used as return type: %s is not registered as a return type.\n" % restype)
+            if (
+                not restype in REGISTERED_TYPES
+                or not REGISTERED_TYPES[restype].is_return_type
+            ):
+                sys.stderr.write(
+                    "The type used as return type: %s is not registered as a return type.\n"
+                    % restype
+                )
 
                 return_type, storage_type, errcheck = self._parseType(restype)
 
                 if inspect.isclass(return_type):
-                    sys.stderr.write("  Correct type may be: %s_ref or %s_obj.\n" % (restype, restype))
+                    sys.stderr.write(
+                        "  Correct type may be: %s_ref or %s_obj.\n"
+                        % (restype, restype)
+                    )
 
                 return None
 
@@ -211,12 +226,16 @@ class Prototype(object):
             self._resolved = True
         if self._func is None:
             if self._allow_attribute_error:
-                raise NotImplementedError("Function:%s has not been properly resolved" % self.__name__)
+                raise NotImplementedError(
+                    "Function:%s has not been properly resolved" % self.__name__
+                )
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
         if self._bind and not args[0].is_initialized():
-            raise ValueError("Called bound function with uninitialized object of type "
-                             f"{type(args[0]).__name__}")
+            raise ValueError(
+                "Called bound function with uninitialized object of type "
+                f"{type(args[0]).__name__}"
+            )
         try:
             return self._func(*args)
         except ctypes.ArgumentError as err:
@@ -225,19 +244,21 @@ class Prototype(object):
             # ctypes and, as such, just an implementation detail.
             # ArgumentError.message will look like this
             #   `argument 4: <type 'exceptions.TypeError'>: wrong type`
-            # The only useful information here is the index of the argument 
+            # The only useful information here is the index of the argument
             errMsg = err.message if hasattr(err, "message") else str(err)
             tokens = re.split("[ :]", errMsg)
             argidx = int(tokens[1]) - 1  # it starts from 1
-            raise TypeError((
-                "Argument {argidx}: cannot create a {argtype} from the given "
-                "value {actval} ({acttype})")
-                .format(argtype=self._func.argtypes[argidx],
-                        argidx=argidx,
-                        actval=repr(args[argidx]),
-                        acttype=type(args[argidx]),
-                        )
-                ) from err
+            raise TypeError(
+                (
+                    "Argument {argidx}: cannot create a {argtype} from the given "
+                    "value {actval} ({acttype})"
+                ).format(
+                    argtype=self._func.argtypes[argidx],
+                    argidx=argidx,
+                    actval=repr(args[argidx]),
+                    acttype=type(args[argidx]),
+                )
+            ) from err
 
     def __get__(self, instance, owner):
         if not self._resolved:
@@ -259,11 +280,15 @@ class Prototype(object):
         return 'Prototype("%s"%s)' % (self._prototype, bound)
 
     @classmethod
-    def registerType(cls, type_name, type_class_or_function, is_return_type=True, storage_type=None):
+    def registerType(
+        cls, type_name, type_class_or_function, is_return_type=True, storage_type=None
+    ):
         if storage_type is None and (inspect.isfunction(type_class_or_function)):
-          storage_type = ctypes.c_void_p
+            storage_type = ctypes.c_void_p
 
-        _registerType(type_name,
-                      type_class_or_function,
-                      is_return_type = is_return_type,
-                      storage_type   = storage_type)
+        _registerType(
+            type_name,
+            type_class_or_function,
+            is_return_type=is_return_type,
+            storage_type=storage_type,
+        )
