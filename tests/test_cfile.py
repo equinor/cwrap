@@ -7,12 +7,12 @@ import unittest
 from cwrap import Prototype, CFILE, load, open as copen
 
 # Local copies so that the real ones don't get changed
-class TestUtilPrototype(Prototype):
+class ForTestUtilPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
     def __init__(self, prototype, bind=False):
-        super(TestUtilPrototype, self).__init__(TestUtilPrototype.lib, prototype, bind=bind)
+        super(ForTestUtilPrototype, self).__init__(ForTestUtilPrototype.lib, prototype, bind=bind)
 
-fileno = TestUtilPrototype("int fileno(FILE)")
+fileno = ForTestUtilPrototype("int fileno(FILE)")
 
 
 class CFILETest(unittest.TestCase):

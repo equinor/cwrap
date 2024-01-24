@@ -1,8 +1,7 @@
+import ctypes
+from cwrap import BaseCEnum, Prototype, load
 import os
 import unittest
-
-from cwrap import BaseCEnum, Prototype, load
-
 
 class BaseCEnumTest(unittest.TestCase):
     def test_base_c_enum(self):
@@ -121,3 +120,12 @@ def test_that_enum_can_be_bind_methods():
 
     Endumb.addEnum("SOME_VALUE", -1)
     assert Endumb.SOME_VALUE.abs() == 1
+
+def test_base_c_enum_to_c_int():
+    class NumberEnum(BaseCEnum):
+        pass
+
+    NumberEnum.addEnum("ONE", 1)
+
+    c_int_value = ctypes.c_int(NumberEnum.ONE)
+    assert c_int_value.value == NumberEnum.ONE
