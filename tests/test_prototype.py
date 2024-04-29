@@ -8,7 +8,7 @@ class LibCPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype, bind):
-        super(LibCPrototype, self).__init__(LibCPrototype.lib, prototype, bind=bind)
+        super().__init__(LibCPrototype.lib, prototype, bind=bind)
 
 
 class BadInitialization(BaseCClass):

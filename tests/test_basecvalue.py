@@ -9,7 +9,7 @@ class ForTestPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype):
-        super(ForTestPrototype, self).__init__(self.lib, prototype)
+        super().__init__(self.lib, prototype)
 
 
 class UnsignedByteValue(BaseCValue):
@@ -30,14 +30,14 @@ class BaseCValueTest(unittest.TestCase):
             DATA_TYPE = str
 
             def __init__(self, value):
-                super(ExceptionValueTest, self).__init__(value)
+                super().__init__(value)
 
         with self.assertRaises(ValueError):
             ExceptionValueTest("Failure")
 
         class NoDataTypeTest(BaseCValue):
             def __init__(self, value):
-                super(NoDataTypeTest, self).__init__(value)
+                super().__init__(value)
 
         with self.assertRaises(ValueError):
             ExceptionValueTest(0)

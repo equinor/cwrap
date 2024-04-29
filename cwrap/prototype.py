@@ -20,10 +20,8 @@ import re
 import sys
 from types import MethodType
 
-import six
 
-
-class TypeDefinition(object):
+class TypeDefinition:
     def __init__(self, type_class_or_function, is_return_type, storage_type, errcheck):
         self.storage_type = storage_type
         self.is_return_type = is_return_type
@@ -34,34 +32,32 @@ class TypeDefinition(object):
         self.errcheck = errcheck
 
 
-if six.PY3:
+class CStringHelper:
+    @classmethod
+    def from_param(cls, value):
+        if value is None:
+            return None
+        elif isinstance(value, (bytes, ctypes.Array)):
+            return value
+        else:
+            e = value.encode()
+            return e
 
-    class CStringHelper(object):
-        @classmethod
-        def from_param(cls, value):
-            if value is None:
-                return None
-            elif isinstance(value, (bytes, ctypes.Array)):
-                return value
-            else:
-                e = value.encode()
-                return e
+    @staticmethod
+    def toStr(result, func, arguments):
+        """
+        Transform a foreign char* type to str.
 
-        @staticmethod
-        def toStr(result, func, arguments):
-            """
-            Transform a foreign char* type to str (if python 3).
-
-            ctypes functions have an attribute called errcheck that can not
-            only be used for error checking but also to alter the result. If
-            errcheck is defined, the value returned from that function is what
-            is returned from the foreign function call. In this case, C returns
-            strings in the form of zero-terminated char* strings. To use these
-            as python strings (str) they must be decoded.
-            """
-            if result is None or result == 0:
-                return None
-            return result.decode()
+        ctypes functions have an attribute called errcheck that can not
+        only be used for error checking but also to alter the result. If
+        errcheck is defined, the value returned from that function is what
+        is returned from the foreign function call. In this case, C returns
+        strings in the form of zero-terminated char* strings. To use these
+        as python strings (str) they must be decoded.
+        """
+        if result is None or result == 0:
+            return None
+        return result.decode()
 
 
 REGISTERED_TYPES = {}
@@ -98,16 +94,14 @@ _registerType("bool*", ctypes.POINTER(ctypes.c_bool))
 _registerType("long", ctypes.c_long)
 _registerType("long*", ctypes.POINTER(ctypes.c_long))
 _registerType("char", ctypes.c_char)
-if six.PY2:
-    _registerType("char*", ctypes.c_char_p)
-    _registerType("char**", ctypes.POINTER(ctypes.c_char_p))
-if six.PY3:
-    _registerType(
-        "char*",
-        CStringHelper,
-        storage_type=ctypes.c_char_p,
-        errcheck=CStringHelper.toStr,
-    )
+
+
+_registerType(
+    "char*",
+    CStringHelper,
+    storage_type=ctypes.c_char_p,
+    errcheck=CStringHelper.toStr,
+)
 _registerType("float", ctypes.c_float)
 _registerType("float*", ctypes.POINTER(ctypes.c_float))
 _registerType("double", ctypes.c_double)
@@ -129,7 +123,7 @@ class Prototype:
     pattern = re.compile(PROTOTYPE_PATTERN)
 
     def __init__(self, lib, prototype, bind=False, allow_attribute_error=False):
-        super(Prototype, self).__init__()
+        super().__init__()
         self._lib = lib
         self._prototype = prototype
         self._bind = bind
@@ -244,15 +238,8 @@ class Prototype:
             tokens = re.split("[ :]", errMsg)
             argidx = int(tokens[1]) - 1  # it starts from 1
             raise TypeError(
-                (
-                    "Argument {argidx}: cannot create a {argtype} from the given "
-                    "value {actval} ({acttype})"
-                ).format(
-                    argtype=self._func.argtypes[argidx],
-                    argidx=argidx,
-                    actval=repr(args[argidx]),
-                    acttype=type(args[argidx]),
-                )
+                f"Argument {argidx}: cannot create a {self._func.argtypes[argidx]} from the given "
+                f"value {repr(args[argidx])} ({type(args[argidx])})"
             ) from err
 
     def __get__(self, instance, owner):
@@ -260,10 +247,7 @@ class Prototype:
             self.resolve()
             self._resolved = True
         if self.shouldBeBound():
-            if six.PY2:
-                return MethodType(self, instance, owner)
-            if six.PY3:
-                return MethodType(self, instance)
+            return MethodType(self, instance)
         else:
             return self
 

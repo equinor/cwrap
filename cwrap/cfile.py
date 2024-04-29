@@ -16,163 +16,94 @@
 
 import os
 
-import six
-
 from .basecclass import BaseCClass
+from .clib import load as cwrapload
 from .prototype import Prototype
 
-if six.PY2:
-    import ctypes
 
-    def copen(filename, mode="r"):
-        """
-        This is a compatibility layer for functions taking FILE* pointers, and
-        should not be used unless absolutely needed.
+class LibcPrototype(Prototype):
+    # Load the c standard library (on Linux passsing None does the trick)
+    lib = cwrapload("msvcrt" if os.name == "nt" else None)
 
-        In Python 2 this function is simply an alias for open. In Python 3,
-        however, it returns an instance of CWrapFile, a very light weight
-        wrapper around a FILE* instance.
-        """
-        return open(filename, mode)  # noqa
-
-    class CFILE(BaseCClass):
-        """
-        Utility class to map a Python file handle <-> FILE* in C
-        """
-
-        TYPE_NAME = "FILE"
-
-        _as_file = Prototype(ctypes.pythonapi, "void* PyFile_AsFile(py_object)")
-
-        def __init__(self, py_file):
-            """
-            Takes a python file handle and looks up the underlying FILE *
-
-            The purpose of the CFILE class is to be able to use python
-            file handles when calling C functions which expect a FILE
-            pointer. A CFILE instance should be created based on the
-            Python file handle, and that should be passed to the function
-            expecting a FILE pointer.
-
-            The implementation is based on the ctypes object
-            pythonapi which is ctypes wrapping of the CPython api.
-
-              C-function:
-                 void fprintf_hello(FILE * stream , const char * msg);
-
-              Python wrapper:
-                 lib = clib.load( "lib.so" )
-                 fprintf_hello = Prototype(lib, "void fprintf_hello( FILE , char* )")
-
-              Python use:
-                 py_fileH = open("file.txt" , "w")
-                 fprintf_hello( CFILE( py_fileH ) , "Message ...")
-                 py_fileH.close()
-
-            If the supplied argument is not of type py_file the function
-            will raise a TypeException.
-
-            Examples: ecl.ecl.ecl_kw.EclKW.fprintf_grdecl()
-            """
-            c_ptr = self._as_file(py_file)
-            try:
-                super(CFILE, self).__init__(c_ptr)
-            except ValueError as err:
-                raise TypeError(
-                    "Sorry - the supplied argument is not a valid "
-                    " Python file handle!"
-                ) from err
-
-            self.py_file = py_file
-
-        def __del__(self):
-            pass
+    def __init__(self, prototype, bind=False, allow_attribute_error=False):
+        super().__init__(
+            LibcPrototype.lib,
+            prototype,
+            bind=bind,
+            allow_attribute_error=allow_attribute_error,
+        )
 
 
-if six.PY3:
-    from .clib import load as cwrapload
+def copen(filename, mode="r"):
+    """
+    This is a compatibility layer for functions taking FILE* pointers, and
+    should not be used unless absolutely needed.
 
-    class LibcPrototype(Prototype):
-        # Load the c standard library (on Linux passsing None does the trick)
-        lib = cwrapload("msvcrt" if os.name == "nt" else None)
+    It returns an instance of CWrapFile, a very lightweight
+    wrapper around a FILE* instance.
+    """
+    return CWrapFile(filename, mode)
 
-        def __init__(self, prototype, bind=False, allow_attribute_error=False):
-            super(LibcPrototype, self).__init__(
-                LibcPrototype.lib,
-                prototype,
-                bind=bind,
-                allow_attribute_error=allow_attribute_error,
-            )
 
-    def copen(filename, mode="r"):
-        """
-        This is a compatibility layer for functions taking FILE* pointers, and
-        should not be used unless absolutely needed.
+class CWrapFile(BaseCClass):
+    """
+    This is a compatibility layer for functions taking FILE* pointers, and
+    should not be used unless absolutely needed.
 
-        In Python 2 this function is simply an alias for open. In Python 3,
-        however, it returns an instance of CWrapFile, a very lightweight
-        wrapper around a FILE* instance.
-        """
-        return CWrapFile(filename, mode)
+    CWrapFile is a very lightweight wrapper around FILE* instances. It is
+    meant be used inplace of python file objects that are to be passed to
+    foreign function calls under python 3.
 
-    class CWrapFile(BaseCClass):
-        """
-        This is a compatibility layer for functions taking FILE* pointers, and
-        should not be used unless absolutely needed.
+    Example:
+        with cwrap.open('filename', 'mode') as f:
+            foreign_function_call(f)
+    """
 
-        CWrapFile is a very lightweight wrapper around FILE* instances. It is
-        meant be used inplace of python file objects that are to be passed to
-        foreign function calls under python 3.
+    TYPE_NAME = "FILE"
 
-        Example:
-            with cwrap.open('filename', 'mode') as f:
-                foreign_function_call(f)
-        """
+    _fopen = LibcPrototype("void* fopen (char*, char*)")
+    _fclose = LibcPrototype("int fclose (FILE)", bind=True)
+    _fflush = LibcPrototype("int fflush (FILE)", bind=True)
 
-        TYPE_NAME = "FILE"
+    def __init__(self, fname, mode):
+        c_ptr = self._fopen(fname, mode)
+        self._mode = mode
+        self._fname = fname
+        self._closed = False
 
-        _fopen = LibcPrototype("void* fopen (char*, char*)")
-        _fclose = LibcPrototype("int fclose (FILE)", bind=True)
-        _fflush = LibcPrototype("int fflush (FILE)", bind=True)
+        try:
+            super().__init__(c_ptr)
+        except ValueError as err:
+            self._closed = True
+            raise OSError(f'Could not open file "{fname}" in mode {mode}') from err
 
-        def __init__(self, fname, mode):
-            c_ptr = self._fopen(fname, mode)
-            self._mode = mode
-            self._fname = fname
-            self._closed = False
+    def close(self):
+        if not self._closed:
+            self._fflush()
+            cs = self._fclose()
+            if cs != 0:
+                raise OSError("Failed to close file")
+            self._closed = True
 
-            try:
-                super(CWrapFile, self).__init__(c_ptr)
-            except ValueError as err:
-                self._closed = True
-                raise IOError(f'Could not open file "{fname}" in mode {mode}') from err
+    def __enter__(self):
+        return self
 
-        def close(self):
-            if not self._closed:
-                self._fflush()
-                cs = self._fclose()
-                if cs != 0:
-                    raise IOError("Failed to close file")
-                self._closed = True
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return exc_type is None
 
-        def __enter__(self):
-            return self
+    def free(self):
+        self.close()
 
-        def __exit__(self, exc_type, exc_val, exc_tb):
-            self.close()
-            return exc_type is None
+    def __del__(self):
+        self.close()
 
-        def free(self):
-            self.close()
 
-        def __del__(self):
-            self.close()
-
-    def CFILE(f):
-        if not isinstance(f, CWrapFile):
-            raise TypeError(
-                "This function requires the use of CWrapFile, "
-                "not {} when running Python 3. See "
-                "help(cwrap.open) for more info".format(type(f).__name__)
-            )
-        return f
+def CFILE(f):
+    if not isinstance(f, CWrapFile):
+        raise TypeError(
+            "This function requires the use of CWrapFile, "
+            f"not {type(f).__name__} when running Python 3. See "
+            "help(cwrap.open) for more info"
+        )
+    return f

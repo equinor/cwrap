@@ -14,17 +14,12 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import ctypes
-
-import six
 
 from .metacwrap import MetaCWrap
 
 
-@six.add_metaclass(MetaCWrap)
-class BaseCEnum:
+class BaseCEnum(metaclass=MetaCWrap):
     enum_namespace = {}
 
     def __init__(self, *args, **kwargs):
@@ -40,7 +35,7 @@ class BaseCEnum:
 
             return enum
         else:
-            obj = super(BaseCEnum, cls).__new__(cls, *args)
+            obj = super().__new__(cls, *args)
             obj.name = None
             obj.value = None
             return obj

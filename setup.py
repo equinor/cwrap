@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup, Extension
+from setuptools import setup
 
 long_description = """
 =======
@@ -27,7 +27,7 @@ setup(
     setup_requires=["setuptools_scm"],
     license="GPL-3.0",
     platforms="any",
-    install_requires=["six"],
+    install_requires=[],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Other Environment",

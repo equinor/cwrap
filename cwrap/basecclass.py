@@ -14,17 +14,12 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 import ctypes
-
-import six
 
 from .metacwrap import MetaCWrap
 
 
-@six.add_metaclass(MetaCWrap)
-class BaseCClass:
+class BaseCClass(metaclass=MetaCWrap):
     namespaces = {}
 
     def __init__(self, c_pointer, parent=None, is_reference=False):
@@ -41,7 +36,7 @@ class BaseCClass:
         self.__is_reference = is_reference
 
     def __new__(cls, *more, **kwargs):
-        obj = super(BaseCClass, cls).__new__(cls)
+        obj = super().__new__(cls)
         obj.__c_pointer = None
         obj.__parent = None
         obj.__is_reference = False
@@ -119,7 +114,7 @@ class BaseCClass:
         if isinstance(other, BaseCClass):
             return self.__c_pointer == other.__c_pointer
         else:
-            return super(BaseCClass, self) == other
+            return super() == other
 
     def __hash__(self):
         # Similar to last resort comparison; this returns the hash of the

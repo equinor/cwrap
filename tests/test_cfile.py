@@ -12,9 +12,7 @@ class ForTestUtilPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype, bind=False):
-        super(ForTestUtilPrototype, self).__init__(
-            ForTestUtilPrototype.lib, prototype, bind=bind
-        )
+        super().__init__(ForTestUtilPrototype.lib, prototype, bind=bind)
 
 
 fileno = ForTestUtilPrototype("int fileno(FILE)")
