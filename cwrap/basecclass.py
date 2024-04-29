@@ -14,16 +14,17 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import ctypes
 
 import six
 
-import ctypes
 from .metacwrap import MetaCWrap
 
+
 @six.add_metaclass(MetaCWrap)
-class BaseCClass(object):
+class BaseCClass:
     namespaces = {}
 
     def __init__(self, c_pointer, parent=None, is_reference=False):
@@ -31,7 +32,9 @@ class BaseCClass(object):
             raise ValueError("Must have a valid (not null) pointer value!")
 
         if c_pointer < 0:
-            raise ValueError("The pointer value is negative! This may be correct, but usually is not!")
+            raise ValueError(
+                "The pointer value is negative! This may be correct, but usually is not!"
+            )
 
         self.__c_pointer = c_pointer
         self.__parent = parent
@@ -52,7 +55,7 @@ class BaseCClass(object):
         return self.__c_pointer
 
     def _ad_str(self):
-        return 'at 0x%x' % self._address()
+        return f"at 0x{self._address():x}"
 
     @classmethod
     def from_param(cls, c_class_object):
@@ -61,14 +64,16 @@ class BaseCClass(object):
 
         if c_class_object is None:
             return ctypes.c_void_p()
-        else:
-            return ctypes.c_void_p(c_class_object.__c_pointer)
+
+        return ctypes.c_void_p(c_class_object.__c_pointer)
 
     @classmethod
     def createPythonObject(cls, c_pointer):
         if c_pointer is not None:
             new_obj = cls.__new__(cls)
-            BaseCClass.__init__(new_obj, c_pointer=c_pointer, parent=None, is_reference=False)
+            BaseCClass.__init__(
+                new_obj, c_pointer=c_pointer, parent=None, is_reference=False
+            )
             return new_obj
         else:
             return None
@@ -77,7 +82,9 @@ class BaseCClass(object):
     def createCReference(cls, c_pointer, parent=None):
         if c_pointer is not None:
             new_obj = cls.__new__(cls)
-            BaseCClass.__init__(new_obj, c_pointer=c_pointer, parent=parent, is_reference=True)
+            BaseCClass.__init__(
+                new_obj, c_pointer=c_pointer, parent=parent, is_reference=True
+            )
             return new_obj
         else:
             return None
@@ -90,7 +97,6 @@ class BaseCClass(object):
         self.__is_reference = True
         self.__parent = parent
 
-
     def setParent(self, parent=None):
         if self.__is_reference:
             self.__parent = parent
@@ -100,7 +106,7 @@ class BaseCClass(object):
         return self
 
     def isReference(self):
-        """ @rtype: bool """
+        """@rtype: bool"""
         return self.__is_reference
 
     def parent(self):
@@ -113,7 +119,7 @@ class BaseCClass(object):
         if isinstance(other, BaseCClass):
             return self.__c_pointer == other.__c_pointer
         else:
-            return super(BaseCClass , self) == other
+            return super(BaseCClass, self) == other
 
     def __hash__(self):
         # Similar to last resort comparison; this returns the hash of the
@@ -123,25 +129,22 @@ class BaseCClass(object):
     def free(self):
         raise NotImplementedError("A BaseCClass requires a free method implementation!")
 
-    def _create_repr(self, args = ''):
+    def _create_repr(self, args=""):
         """Representation on the form (e.g.) 'EclFile(...) at 0x1729'."""
-        return "{0}({1}) {2}".format(self.__class__.__name__, args, self._ad_str())
+        return f"{self.__class__.__name__}({args}) {self._ad_str()}"
 
     def __repr__(self):
         """Representation on the form (e.g.) 'EclFile(...) at 0x1729'."""
         return self._create_repr()
 
     def __del__(self):
-        if self.free is not None:
-            if not self.__is_reference:
-                # Important to check the c_pointer; in the case of failed object creation
-                # we can have a Python object with c_pointer == None.
-                if self.__c_pointer:
-                    self.free()
+        if self.free is not None and not self.__is_reference and self.__c_pointer:
+            # Important to check the c_pointer; in the case of failed object creation
+            # we can have a Python object with c_pointer == None.
+            self.free()
 
     def _invalidateCPointer(self):
         self.__c_pointer = None
-
 
     def __bool__(self):
         """The BaseCClass instance will evaluate to true if it is bound to an
@@ -149,11 +152,8 @@ class BaseCClass(object):
         elaborate bool tests should be implemented in the derived
         class.
         """
-        if self.__c_pointer:
-            return True
-        else:
-            return False
 
+        return bool(self.__c_pointer)
 
     def __nonzero__(self):
-        return self.__bool__( )
+        return self.__bool__()

@@ -1,14 +1,16 @@
-from ctypes import c_ubyte, c_double
-from cwrap import BaseCValue, Prototype, load
 import os
-
 import unittest
+from ctypes import c_double, c_ubyte
+
+from cwrap import BaseCValue, Prototype, load
+
 
 class ForTestPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype):
         super(ForTestPrototype, self).__init__(self.lib, prototype)
+
 
 class UnsignedByteValue(BaseCValue):
     DATA_TYPE = c_ubyte
@@ -23,24 +25,22 @@ class BaseCValueTest(unittest.TestCase):
     def setUp(self):
         self.sqrt_double = ForTestPrototype("sqrt_double sqrt(double)")
 
-
     def test_illegal_type(self):
         class ExceptionValueTest(BaseCValue):
             DATA_TYPE = str
+
             def __init__(self, value):
                 super(ExceptionValueTest, self).__init__(value)
 
         with self.assertRaises(ValueError):
-            test = ExceptionValueTest("Failure")
-
+            ExceptionValueTest("Failure")
 
         class NoDataTypeTest(BaseCValue):
             def __init__(self, value):
                 super(NoDataTypeTest, self).__init__(value)
 
         with self.assertRaises(ValueError):
-            test = ExceptionValueTest(0)
-
+            ExceptionValueTest(0)
 
     def test_creation(self):
         test_value = UnsignedByteValue(255)
@@ -52,7 +52,6 @@ class BaseCValueTest(unittest.TestCase):
 
         self.assertEqual(test_value.type(), c_ubyte)
 
-
     def test_from_param(self):
         test_value = UnsignedByteValue(127)
 
@@ -62,12 +61,10 @@ class BaseCValueTest(unittest.TestCase):
             UnsignedByteValue.from_param(None)
 
         with self.assertRaises(ValueError):
-           UnsignedByteValue.from_param("exception")
-
+            UnsignedByteValue.from_param("exception")
 
     def test_double_sqrt(self):
         sqrt_value = self.sqrt_double(100)
 
         self.assertIsInstance(sqrt_value, SqrtDouble)
-        self.assertEqual(sqrt_value.value( ) , 10)
-        
+        self.assertEqual(sqrt_value.value(), 10)

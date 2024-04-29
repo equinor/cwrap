@@ -1,7 +1,9 @@
 import ctypes
-from cwrap import BaseCEnum, Prototype, load
 import os
 import unittest
+
+from cwrap import BaseCEnum, Prototype, load
+
 
 class BaseCEnumTest(unittest.TestCase):
     def test_base_c_enum(self):
@@ -52,7 +54,7 @@ class BaseCEnumTest(unittest.TestCase):
             e = enum.ONE | enum2.ONE
 
         with self.assertRaises(AssertionError):
-            e = enum.ONE ^ enum2.ONE
+            e = enum.ONE ^ enum2.ONE  # noqa F841
 
     def test_in_operator(self):
         class PowerOf2(BaseCEnum):
@@ -94,7 +96,7 @@ class BaseCEnumTest(unittest.TestCase):
         EnumName.addEnum("TWO", 2)
 
         with self.assertRaises(ValueError):
-            enum = EnumName.from_string("No-not-this")
+            EnumName.from_string("No-not-this")
 
         one = EnumName.from_string("ONE")
         self.assertEqual(one, EnumName.ONE)
@@ -120,6 +122,7 @@ def test_that_enum_can_be_bind_methods():
 
     Endumb.addEnum("SOME_VALUE", -1)
     assert Endumb.SOME_VALUE.abs() == 1
+
 
 def test_base_c_enum_to_c_int():
     class NumberEnum(BaseCEnum):

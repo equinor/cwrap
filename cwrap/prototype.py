@@ -41,9 +41,7 @@ if six.PY3:
         def from_param(cls, value):
             if value is None:
                 return None
-            elif isinstance(value, bytes):
-                return value
-            elif isinstance(value, ctypes.Array):
+            elif isinstance(value, (bytes, ctypes.Array)):
                 return value
             else:
                 e = value.encode()
@@ -78,7 +76,7 @@ def _registerType(
     errcheck=None,
 ):
     if type_name in REGISTERED_TYPES:
-        raise PrototypeError("Type: '%s' already registered!" % type_name)
+        raise PrototypeError(f"Type: '{type_name}' already registered!")
 
     REGISTERED_TYPES[type_name] = TypeDefinition(
         type_class_or_function, is_return_type, storage_type, errcheck
@@ -127,7 +125,7 @@ class PrototypeError(Exception):
     pass
 
 
-class Prototype(object):
+class Prototype:
     pattern = re.compile(PROTOTYPE_PATTERN)
 
     def __init__(self, lib, prototype, bind=False, allow_attribute_error=False):
@@ -151,7 +149,7 @@ class Prototype(object):
                 type_definition.storage_type,
                 type_definition.errcheck,
             )
-        raise ValueError("Unknown type: %s" % type_name)
+        raise ValueError(f"Unknown type: {type_name}")
 
     def shouldBeBound(self):
         return self._bind
@@ -159,7 +157,7 @@ class Prototype(object):
     def resolve(self):
         match = re.match(Prototype.pattern, self._prototype)
         if not match:
-            raise PrototypeError("Illegal prototype definition: %s\n" % self._prototype)
+            raise PrototypeError(f"Illegal prototype definition: {self._prototype}\n")
         else:
             restype = match.groupdict()["return"]
             function_name = match.groupdict()["function"]
@@ -168,29 +166,26 @@ class Prototype(object):
 
             try:
                 func = getattr(self._lib, function_name)
-            except AttributeError:
+            except AttributeError as err:
                 if self._allow_attribute_error:
                     return
                 raise PrototypeError(
-                    "Can not find function: %s in library: %s"
-                    % (function_name, self._lib)
-                )
+                    f"Can not find function: {function_name} in library: {self._lib}"
+                ) from err
 
             if (
                 not restype in REGISTERED_TYPES
                 or not REGISTERED_TYPES[restype].is_return_type
             ):
                 sys.stderr.write(
-                    "The type used as return type: %s is not registered as a return type.\n"
-                    % restype
+                    f"The type used as return type: {restype} is not registered as a return type.\n"
                 )
 
                 return_type, storage_type, errcheck = self._parseType(restype)
 
                 if inspect.isclass(return_type):
                     sys.stderr.write(
-                        "  Correct type may be: %s_ref or %s_obj.\n"
-                        % (restype, restype)
+                        f"  Correct type may be: {restype}_ref or {restype}_obj.\n"
                     )
 
                 return None
@@ -227,7 +222,7 @@ class Prototype(object):
         if self._func is None:
             if self._allow_attribute_error:
                 raise NotImplementedError(
-                    "Function:%s has not been properly resolved" % self.__name__
+                    f"Function:{self.__name__} has not been properly resolved"
                 )
             else:
                 raise PrototypeError("Prototype has not been properly resolved")
@@ -277,7 +272,7 @@ class Prototype(object):
         if self.shouldBeBound():
             bound = ", bind=True"
 
-        return 'Prototype("%s"%s)' % (self._prototype, bound)
+        return f'Prototype("{self._prototype}"{bound})'
 
     @classmethod
     def registerType(
