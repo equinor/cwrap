@@ -8,7 +8,7 @@ class LibCPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype, bind=False, allow_attribute_error=False):
-        super(LibCPrototype, self).__init__(
+        super().__init__(
             LibCPrototype.lib,
             prototype,
             bind=bind,
@@ -29,7 +29,7 @@ class LibC(BaseCClass):
 
     def __init__(self):
         c_ptr = 1  # c_ptr = self._malloc(4)
-        super(LibC, self).__init__(c_ptr)
+        super().__init__(c_ptr)
 
     def abs(self, x):
         return self._abs(x)

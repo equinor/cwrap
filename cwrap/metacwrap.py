@@ -26,7 +26,7 @@ def snakeCase(name):
 
 class MetaCWrap(type):
     def __init__(cls, name, bases, attrs):
-        super(MetaCWrap, cls).__init__(name, bases, attrs)
+        super().__init__(name, bases, attrs)
 
         is_return_type = False
         storage_type = None

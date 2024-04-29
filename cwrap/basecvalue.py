@@ -14,8 +14,6 @@
 #  See the GNU General Public License at <http://www.gnu.org/licenses/gpl.html>
 #  for more details.
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
 from ctypes import (
     c_bool,
     c_byte,
@@ -32,13 +30,10 @@ from ctypes import (
     pointer,
 )
 
-import six
-
 from .metacwrap import MetaCWrap
 
 
-@six.add_metaclass(MetaCWrap)
-class BaseCValue:
+class BaseCValue(metaclass=MetaCWrap):
     DATA_TYPE = None
     LEGAL_TYPES = [
         c_byte,
@@ -56,7 +51,7 @@ class BaseCValue:
     ]
 
     def __init__(self, value):
-        super(BaseCValue, self).__init__()
+        super().__init__()
 
         if not self.DATA_TYPE in self.LEGAL_TYPES:
             raise ValueError(

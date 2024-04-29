@@ -107,7 +107,7 @@ def test_that_enum_can_be_bind_methods():
         lib = load("msvcrt" if os.name == "nt" else None)
 
         def __init__(self, prototype, bind=False, allow_attribute_error=False):
-            super(LibCPrototype, self).__init__(
+            super().__init__(
                 LibCPrototype.lib,
                 prototype,
                 bind=bind,
