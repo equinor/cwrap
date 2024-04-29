@@ -15,16 +15,16 @@
 #  for more details.
 
 import os
-import six
-import sys
-from .prototype import Prototype
-from .basecclass import BaseCClass
 
+import six
+
+from .basecclass import BaseCClass
+from .prototype import Prototype
 
 if six.PY2:
     import ctypes
 
-    def copen(filename, mode='r'):
+    def copen(filename, mode="r"):
         """
         This is a compatibility layer for functions taking FILE* pointers, and
         should not be used unless absolutely needed.
@@ -33,12 +33,13 @@ if six.PY2:
         however, it returns an instance of CWrapFile, a very light weight
         wrapper around a FILE* instance.
         """
-        return open(filename, mode)
+        return open(filename, mode)  # noqa
 
     class CFILE(BaseCClass):
         """
         Utility class to map a Python file handle <-> FILE* in C
         """
+
         TYPE_NAME = "FILE"
 
         _as_file = Prototype(ctypes.pythonapi, "void* PyFile_AsFile(py_object)")
@@ -76,9 +77,11 @@ if six.PY2:
             c_ptr = self._as_file(py_file)
             try:
                 super(CFILE, self).__init__(c_ptr)
-            except ValueError:
-                raise TypeError("Sorry - the supplied argument is not a valid "
-                                " Python file handle!")
+            except ValueError as err:
+                raise TypeError(
+                    "Sorry - the supplied argument is not a valid "
+                    " Python file handle!"
+                ) from err
 
             self.py_file = py_file
 
@@ -91,16 +94,17 @@ if six.PY3:
 
     class LibcPrototype(Prototype):
         # Load the c standard library (on Linux passsing None does the trick)
-        lib = cwrapload('msvcrt' if os.name == 'nt' else None)
+        lib = cwrapload("msvcrt" if os.name == "nt" else None)
 
         def __init__(self, prototype, bind=False, allow_attribute_error=False):
             super(LibcPrototype, self).__init__(
                 LibcPrototype.lib,
                 prototype,
                 bind=bind,
-                allow_attribute_error=allow_attribute_error)
+                allow_attribute_error=allow_attribute_error,
+            )
 
-    def copen(filename, mode='r'):
+    def copen(filename, mode="r"):
         """
         This is a compatibility layer for functions taking FILE* pointers, and
         should not be used unless absolutely needed.
@@ -139,16 +143,15 @@ if six.PY3:
 
             try:
                 super(CWrapFile, self).__init__(c_ptr)
-            except ValueError:
+            except ValueError as err:
                 self._closed = True
-                raise IOError('Could not open file "{}" in mode {}'
-                              .format(fname, mode))
+                raise IOError(f'Could not open file "{fname}" in mode {mode}') from err
 
         def close(self):
             if not self._closed:
                 self._fflush()
                 cs = self._fclose()
-                if (cs != 0):
+                if cs != 0:
                     raise IOError("Failed to close file")
                 self._closed = True
 
@@ -167,8 +170,9 @@ if six.PY3:
 
     def CFILE(f):
         if not isinstance(f, CWrapFile):
-            raise TypeError("This function requires the use of CWrapFile, "
-                            "not {} when running Python 3. See "
-                            "help(cwrap.open) for more info"
-                            .format(type(f).__name__))
+            raise TypeError(
+                "This function requires the use of CWrapFile, "
+                "not {} when running Python 3. See "
+                "help(cwrap.open) for more info".format(type(f).__name__)
+            )
         return f

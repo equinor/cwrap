@@ -1,16 +1,14 @@
-from cwrap import BaseCClass, Prototype, load
 import os
+
 import pytest
+from cwrap import BaseCClass, Prototype, load
 
 
 class LibCPrototype(Prototype):
     lib = load("msvcrt" if os.name == "nt" else None)
 
     def __init__(self, prototype, bind):
-        super(LibCPrototype, self).__init__(
-            LibCPrototype.lib,
-            prototype,
-            bind=bind)
+        super(LibCPrototype, self).__init__(LibCPrototype.lib, prototype, bind=bind)
 
 
 class BadInitialization(BaseCClass):

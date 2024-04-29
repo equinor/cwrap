@@ -1,6 +1,7 @@
-import unittest
-from cwrap import BaseCClass, Prototype, load
 import os
+import unittest
+
+from cwrap import BaseCClass, Prototype, load
 
 
 class LibCPrototype(Prototype):
@@ -11,7 +12,8 @@ class LibCPrototype(Prototype):
             LibCPrototype.lib,
             prototype,
             bind=bind,
-            allow_attribute_error=allow_attribute_error)
+            allow_attribute_error=allow_attribute_error,
+        )
 
 
 class LibC(BaseCClass):
@@ -21,8 +23,9 @@ class LibC(BaseCClass):
     _atoi = LibCPrototype("int   atoi(char*)")
     _strchr = LibCPrototype("char* strchr(char*, int)")
     _free = LibCPrototype("void  free(void*)")
-    _missing_function = LibCPrototype("void  missing_function(int*)",
-                                      allow_attribute_error=True)
+    _missing_function = LibCPrototype(
+        "void  missing_function(int*)", allow_attribute_error=True
+    )
 
     def __init__(self):
         c_ptr = 1  # c_ptr = self._malloc(4)
@@ -42,7 +45,6 @@ class LibC(BaseCClass):
 
 
 class LibCTest(unittest.TestCase):
-
     def test_libc(self):
         lib = LibC()
         self.assertEqual(lib.abs(-3), 3)

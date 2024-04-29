@@ -31,45 +31,46 @@ be invoked when loading libert_geometry, and that could in principle
 lead to loading a different version of libert_util.so
 """
 
-import platform
 import ctypes
 import os
+import platform
 
-so_extension = {"linux"  : "so",
-                "linux2" : "so",
-                "linux3" : "so",
-                "windows": "dll",
-                "darwin" : "dylib" }
+so_extension = {
+    "linux": "so",
+    "linux2": "so",
+    "linux3": "so",
+    "windows": "dll",
+    "darwin": "dylib",
+}
 
 
 # Passing None to the CDLL() function means to open a lib handle to
 # the current runnning process, i.e. like dlopen( NULL ). We must
 # special case this to avoid creating the bogus argument 'None.so'.
 
-def lib_name(lib , path = None , so_version = None, so_ext = None):
+
+def lib_name(lib, path=None, so_version=None, so_ext=None):
     if lib is None:
         return None
     else:
         platform_key = platform.system().lower()
         if so_version is None:
-            so_version = ''
+            so_version = ""
 
         if so_ext:
-            so_name = "%s.%s%s" % (lib, so_ext, so_version)
+            so_name = f"{lib}.{so_ext}{so_version}"
         elif platform_key == "darwin":
-            so_name = "%s%s.%s" % (lib, so_version, so_extension[ platform_key ])
+            so_name = f"{lib}{so_version}.{so_extension[platform_key]}"
         else:
-            so_name = "%s.%s%s" % (lib, so_extension[ platform_key ], so_version)
+            so_name = f"{lib}.{so_extension[platform_key]}{so_version}"
 
         if path:
-            return os.path.join( path , so_name )
+            return os.path.join(path, so_name)
         else:
             return so_name
 
 
-
-
-def load( lib, so_version = None, path = None, so_ext = None):
+def load(lib, so_version=None, path=None, so_ext=None):
     """Thin wrapper around the ctypes.CDLL function for loading shared
     library.
 
@@ -79,32 +80,33 @@ def load( lib, so_version = None, path = None, so_ext = None):
     """
 
     dll = None
-    lib_files = [ lib_name( lib, path = None, so_version = so_version ),
-                  lib_name( lib, path = None, so_version = so_version, so_ext = so_ext ),
-                  lib_name( lib, path = path, so_version = so_version ),
-                  lib_name( lib, path = path, so_version = so_version, so_ext = so_ext )
-                ]
+    lib_files = [
+        lib_name(lib, path=None, so_version=so_version),
+        lib_name(lib, path=None, so_version=so_version, so_ext=so_ext),
+        lib_name(lib, path=path, so_version=so_version),
+        lib_name(lib, path=path, so_version=so_version, so_ext=so_ext),
+    ]
 
     for lib_file in lib_files:
         try:
-            dll = ctypes.CDLL(lib_file , ctypes.RTLD_GLOBAL)
+            dll = ctypes.CDLL(lib_file, ctypes.RTLD_GLOBAL)
             return dll
         except Exception as exc:
             error = exc
 
-    error_msg = "\nFailed to load shared library:%s\n\ndlopen() error: %s\n" % (lib , error)
+    error_msg = f"\nFailed to load shared library:{lib}\n\ndlopen() error: {error}\n"
 
     LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
     if not LD_LIBRARY_PATH:
         LD_LIBRARY_PATH = ""
 
-    error_msg += """
+    error_msg += f"""
 The runtime linker has searched through the default location of shared
 libraries, and also the locations mentioned in your LD_LIBRARY_PATH
 variable. Your current LD_LIBRARY_PATH setting is:
 
-   LD_LIBRARY_PATH: %s
+   LD_LIBRARY_PATH: {LD_LIBRARY_PATH}
 
 You might need to update this variable?
-""" % LD_LIBRARY_PATH
+"""
     raise ImportError(error_msg)

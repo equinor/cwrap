@@ -24,7 +24,7 @@ from .metacwrap import MetaCWrap
 
 
 @six.add_metaclass(MetaCWrap)
-class BaseCEnum(object):
+class BaseCEnum:
     enum_namespace = {}
 
     def __init__(self, *args, **kwargs):
@@ -36,7 +36,7 @@ class BaseCEnum(object):
             enum = cls.__resolveEnum(args[0])
 
             if enum is None:
-                raise ValueError("Unknown enum value: %i" % args[0])
+                raise ValueError(f"Unknown enum value: {args[0]}")
 
             return enum
         else:
@@ -57,7 +57,7 @@ class BaseCEnum(object):
             if enum.name == name:
                 return enum
 
-        raise ValueError("No such enum:%s" % name)
+        raise ValueError(f"No such enum: {name}")
 
     @classmethod
     def addEnum(cls, name, value):
@@ -102,7 +102,7 @@ class BaseCEnum(object):
         cn = self.__class__.__name__
         na = self.name
         va = self.value
-        return '%s(name = "%s", value = %s)' % (cn, na, va)
+        return f'{cn}(name = "{na}", value = {va})'
 
     def __add__(self, other):
         self.__assertOtherIsSameType(other)
@@ -126,7 +126,7 @@ class BaseCEnum(object):
 
     def __int__(self):
         return self.value
-    
+
     def __index__(self):
         return self.value
 
@@ -136,7 +136,7 @@ class BaseCEnum(object):
     @classmethod
     def __createEnum(cls, value):
         enum = cls.__new__(cls)
-        enum.name = "Unnamed '%s' enum with value: %i" % (str(cls.__name__), value)
+        enum.name = f"Unnamed '{cls.__name__}' enum with value: {value}"
         enum.value = value
         return enum
 
@@ -159,20 +159,16 @@ class BaseCEnum(object):
     def __assertOtherIsSameType(self, other):
         assert isinstance(
             other, self.__class__
-        ), "Can only operate on enums of same type: %s =! %s" % (
-            self.__class__.__name__,
-            other.__class__.__name__,
-        )
+        ), f"Can only operate on enums of same type: {self.__class__.__name__} =! {other.__class__.__name__}"
 
     @classmethod
     def populateEnum(cls, library, enum_provider_function):
         try:
             func = getattr(library, enum_provider_function)
-        except AttributeError:
+        except AttributeError as err:
             raise ValueError(
-                "Could not find enum description function: %s - can not load enum: %s."
-                % (enum_provider_function, cls.__name__)
-            )
+                f"Could not find enum description function: {enum_provider_function} - can not load enum: {cls.__name__}."
+            ) from err
 
         func.restype = ctypes.c_char_p
         func.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int)]

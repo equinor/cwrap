@@ -13,23 +13,27 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install --upgrade setuptools
+        pip install -r dev-requirements.txt -r requirements.txt
 
     - name: Test
       run: |
-        pytest -v tests
+        pytest -sv tests
+
+    - name: Style
+      run: |
+        ruff check cwrap tests
+        ruff format cwrap tests --check
 
 
   publish:
@@ -46,7 +50,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.8
 
@@ -56,7 +60,7 @@ jobs:
         pip wheel . --no-deps -w dist
 
     - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.3.1
+      uses: pypa/gh-action-pypi-publish@v1.8.14
       with:
         user: __token__
         password: ${{ secrets.pypi_password }}
