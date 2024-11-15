@@ -28,7 +28,7 @@ jobs:
 
     - name: Test
       run: |
-        pytest -sv tests
+        pytest -svv tests
 
     - name: Style
       run: |
