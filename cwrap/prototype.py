@@ -37,7 +37,7 @@ class CStringHelper:
     def from_param(cls, value):
         if value is None:
             return None
-        elif isinstance(value, (bytes, ctypes.Array)):
+        elif isinstance(value, (bytes | ctypes.Array)):
             return value
         else:
             e = value.encode()

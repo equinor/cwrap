@@ -16,5 +16,5 @@ Clone this repo and cd into it, then:
 
 ```
 pip install -r requirements.txt
-python -m pytest -v -s tests
+python -m pytest -sv tests
 ```
