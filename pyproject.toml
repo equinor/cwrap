@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cwrap"
+description = "cwrap - ctypes blanket"
+authors = [
+    { name = "Equinor ASA", email = "fg_sib-scout@equinor.com" },
+]
+requires_python = ">=3.10"
+readme = "README.md"
+license = { text = "GPL-3.0" }
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Other Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Natural Language :: English",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+]
+dynamic = ["version"]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/equinor/cwrap"
+
+[tool.setuptools]
+package-dir = {"" = "cwrap"}
+platforms = ["all"]
+
+[tool.setuptools_scm]
+write_to = "cwrap/version.py"
+
+[tool.ruff]
+src = ["cwrap"]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "W",   # pycodestyle
+  "I",   # isort
+  "B",   # flake-8-bugbear
+  "SIM", # flake-8-simplify
+  "F",   # pyflakes
+  "UP",  # pyupgrade
+  "PL",  # pylint
+]
+
+ignore = ["PLW2901", # redefined-loop-name
+          "PLR2004", # magic-value-comparison
+          "PLR0915", # too-many-statements
+          "PLR0912", # too-many-branches
+          "PLR5501", # collapsible-else-if
+          "PLR0911",  # too-many-return-statements
+]
