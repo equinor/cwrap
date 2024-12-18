@@ -8,7 +8,7 @@ description = "cwrap - ctypes blanket"
 authors = [
     { name = "Equinor ASA", email = "fg_sib-scout@equinor.com" },
 ]
-requires_python = ">=3.10"
+requires-python = ">=3.10"
 readme = "README.md"
 license = { text = "GPL-3.0" }
 classifiers=[
@@ -33,15 +33,16 @@ dependencies = []
 Repository = "https://github.com/equinor/cwrap"
 
 [tool.setuptools]
-package-dir = {"" = "cwrap"}
+package-dir = {"" = "src"}
 platforms = ["all"]
 
 [tool.setuptools_scm]
-write_to = "cwrap/version.py"
+write_to = "src/cwrap/version.py"
 
 [tool.ruff]
-src = ["cwrap"]
+src = ["src"]
 line-length = 88
+exclude = ["examples"]
 
 [tool.ruff.lint]
 select = [

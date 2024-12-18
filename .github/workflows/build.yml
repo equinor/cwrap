@@ -24,6 +24,7 @@ jobs:
 
     - name: Install dependencies
       run: |
+        pip install .
         pip install -r requirements.txt
 
     - name: Test
@@ -32,8 +33,8 @@ jobs:
 
     - name: Style
       run: |
-        ruff check cwrap tests
-        ruff format cwrap tests --check
+        ruff check
+        ruff format --check
 
 
   publish:
