@@ -152,9 +152,9 @@ class BaseCEnum(metaclass=MetaCWrap):
         return None
 
     def __assertOtherIsSameType(self, other):
-        assert isinstance(
-            other, self.__class__
-        ), f"Can only operate on enums of same type: {self.__class__.__name__} =! {other.__class__.__name__}"
+        assert isinstance(other, self.__class__), (
+            f"Can only operate on enums of same type: {self.__class__.__name__} != {other.__class__.__name__}"
+        )
 
     @classmethod
     def populateEnum(cls, library, enum_provider_function):
