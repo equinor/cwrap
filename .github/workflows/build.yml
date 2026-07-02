@@ -30,19 +30,24 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      with:
+        enable-cache: true
+        prune-cache: false
+        python-version: ${{ inputs.python-version }}
+
     - name: Install dependencies
       run: |
-        pip install .
-        pip install -r requirements.txt
+        uv sync --all-groups
 
     - name: Test
       run: |
-        pytest -sv tests
+        uv run --no-sync pytest -sv tests
 
     - name: Style
       run: |
-        ruff check
-        ruff format --check
+        SKIP=no-commit-to-branch uv run --no-sync pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
 
 
   publish:
@@ -68,7 +73,7 @@ jobs:
 
     - name: Build wheel
       run: |
-        pip install --upgrade pip build
+        uv pip install build
         python -m build
 
     - name: Publish to PyPI

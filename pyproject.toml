@@ -28,6 +28,12 @@ classifiers=[
 dynamic = ["version"]
 dependencies = []
 
+[dependency-groups]
+dev = [
+    "pre-commit",
+    "pytest",
+]
+
 [project.urls]
 Repository = "https://github.com/equinor/cwrap"
 

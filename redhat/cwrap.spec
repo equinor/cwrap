@@ -36,6 +36,6 @@ python setup.py install --root=${RPM_BUILD_ROOT} --install-lib=/usr/lib64/python
 %clean
 rm -rf %{buildroot}
 
-%files -n python-cwrap 
+%files -n python-cwrap
 %defattr(-,root,root,-)
 %{_libdir}/*
