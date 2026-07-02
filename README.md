@@ -12,9 +12,10 @@ pip install cwrap
 ```
 
 # Running tests
-Clone this repo and cd into it, then:
 
-```
-pip install -r requirements.txt
-python -m pytest -sv tests
+```bash
+git clone https://github.com/equinor/cwrap
+cd cwrap
+uv sync --all-groups
+uv run pytest -sv tests
 ```
