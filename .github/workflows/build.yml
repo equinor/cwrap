@@ -10,6 +10,9 @@ on:
     tags: "*"
   pull_request:
 
+env:
+  UV_FROZEN: true
+
 jobs:
   build:
     strategy:
@@ -30,20 +33,25 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install uv
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      with:
+        enable-cache: true
+        prune-cache: false
+        python-version: ${{ matrix.python-version }}
+
+    - name: Build environment
       run: |
-        pip install .
-        pip install -r requirements.txt
+        uv sync --group dev
 
     - name: Test
       run: |
-        pytest -sv tests
+        uv run pytest -sv tests
 
     - name: Style
       run: |
-        ruff check
-        ruff format --check
-
+        uv run ruff check
+        uv run ruff format --check
 
   publish:
     name: Publish to PyPI
